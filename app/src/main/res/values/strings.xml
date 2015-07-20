@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Media Training</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="item_1">Youtube</string>
+    <string name="item_2">Audio</string>
+    <string name="item_3">Video</string>
+    <string name="item_4">Logout</string>
+    <string name="time">Spring is one of the four conventional temperate seasons, following winter and preceding summer. There are various technical definitions of spring, but local usage of the term varies according to local climate, cultures and customs. When it is spring in the Northern Hemisphere, it will be autumn in the Southern Hemisphere. At the spring equinox, days are approximately 12 hours long with day length increasing as the season progresses. Spring and "springtime" refer to the season, and also to ideas of rebirth, rejuvenation, renewal, resurrection and regrowth. Subtropical and tropical areas have climates better described in terms of other seasons, e.g. dry or wet, monsoonal or cyclonic. Often the cultures have locally defined names for seasons which have little equivalence to the terms originating in Europe.</string>
+</resources>

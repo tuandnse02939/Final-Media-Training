@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- group with single selected item so only one item is highlighted in the nav menu -->
+    <group android:checkableBehavior="single">
+      <item
+            android:id="@+id/drawer_item_1"
+            android:icon="@drawable/youtube"
+            android:checked="true"
+            android:title="@string/item_1"/>
+        <item
+            android:id="@+id/drawer_item_2"
+            android:icon="@drawable/audio_icon"
+            android:title="@string/item_2"/>
+        <item
+            android:id="@+id/drawer_item_3"
+            android:icon="@drawable/video"
+            android:title="@string/item_3"/>
+        <item
+            android:id="@+id/drawer_item_4"
+            android:icon="@drawable/logout"
+            android:title="@string/item_4"/>
+    </group>
+</menu>
