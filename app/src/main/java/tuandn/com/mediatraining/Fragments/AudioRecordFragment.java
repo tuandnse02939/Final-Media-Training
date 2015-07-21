@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +16,6 @@ import android.widget.Button;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
 
 import tuandn.com.mediatraining.Mp4Wrapper.Mp4ParserWrapper;
 import tuandn.com.mediatraining.R;
@@ -35,6 +36,7 @@ public class AudioRecordFragment extends Fragment {
                     : MediaRecorder.AudioEncoder.DEFAULT;
 
     private Button button1, button2;
+    private FloatingActionButton fab,fab_pause,fab_stop,fab_continue;
     private String status, targetFilename;
     private MediaRecorder mediaRecorder;
 
@@ -56,6 +58,26 @@ public class AudioRecordFragment extends Fragment {
 
         status = NOT_RECORD;
         updateUI();
+
+        fab = (FloatingActionButton) getView().findViewById (R.id.audio_floating_button);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (status.equals(FINISHED) || status.equals(NOT_RECORD)) {
+                    targetFilename = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
+                            + "Record_"
+                            + System.currentTimeMillis()
+                            + ".mp3";
+                    record();
+                    status = RECORDDING;
+                    updateUI();
+                }
+                else {
+                    Snackbar.make(getView(),"Recording",Snackbar.LENGTH_LONG).show();
+                }
+            }
+        });
 
         button1.setOnClickListener(new View.OnClickListener() {
             @Override

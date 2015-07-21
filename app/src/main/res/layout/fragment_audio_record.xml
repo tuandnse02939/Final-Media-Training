@@ -21,4 +21,12 @@
         android:layout_alignTop="@+id/audio_button1"
         android:layout_toEndOf="@+id/audio_button1" />
 </RelativeLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/audio_floating_button"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:src="@drawable/record_button"/>
 </android.support.design.widget.CoordinatorLayout>
