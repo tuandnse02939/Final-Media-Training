@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,7 +39,7 @@ import tuandn.com.mediatraining.R;
 public class ListVideoFragment extends Fragment {
     public static final String ARG_PAGE = "ARG_PAGE";
     public static final String API_KEY = "AIzaSyD0MwUad7hVnPWiuX5HiOWCEnf2VVGd8gY";
-    private static final String PREF_ACCOUNT_NAME = "kingdragon102@gmail.com";
+    private static final String PREF_ACCOUNT_NAME = "accountName";
     final HttpTransport transport = AndroidHttp.newCompatibleTransport();
     final JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
 
@@ -46,7 +47,7 @@ public class ListVideoFragment extends Fragment {
     private ArrayList<YouTubeChannel> channels;
     private GoogleAccountCredential credential;
     private YouTube mYouTube;
-    public static final String[] SCOPES = {Scopes.PROFILE, YouTubeScopes.YOUTUBE, YouTubeScopes.YOUTUBE_FORCE_SSL};
+    public static final String[] SCOPES = {Scopes.PROFILE, YouTubeScopes.YOUTUBE, YouTubeScopes.YOUTUBE_FORCE_SSL, YouTubeScopes.YOUTUBEPARTNER, YouTubeScopes.YOUTUBE_READONLY};
 
     public static ListVideoFragment newInstance(int page) {
         Bundle args = new Bundle();
@@ -74,26 +75,43 @@ public class ListVideoFragment extends Fragment {
 
         SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
         credential = GoogleAccountCredential.usingOAuth2(getActivity().getApplicationContext(),Arrays.asList(SCOPES))
-                .setBackOff(new ExponentialBackOff())
-                .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
+                .setBackOff(new ExponentialBackOff());
+//                .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, "Normal"));
+        String mChosenAccountName;
+        if (savedInstanceState != null) {
+            mChosenAccountName = savedInstanceState.getString(PREF_ACCOUNT_NAME);
+        } else {
+            SharedPreferences sp = PreferenceManager
+                    .getDefaultSharedPreferences(getActivity());
+            mChosenAccountName = sp.getString(PREF_ACCOUNT_NAME, GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
+        }
+        credential.setSelectedAccountName("kingdragon102@gmail.com");
+
         mYouTube = new YouTube.Builder(transport,jsonFactory,credential)
                 .setApplicationName("YouTube API Media Training")
                 .build();
-        YouTube.Subscriptions.List channelRequest;
-        try {
-            channelRequest = mYouTube.subscriptions().list("snippet");
-            channelRequest.setMine(true);
-            SubscriptionListResponse listResponse = channelRequest.execute();
-            List<Subscription> subscriptions = listResponse.getItems();
-            if(subscriptions == null){
-                Toast.makeText(getActivity().getApplicationContext(),"Nulllllll",Toast.LENGTH_LONG).show();
-            }
-            else{
-                Toast.makeText(getActivity().getApplicationContext(),"Oh YEAH",Toast.LENGTH_LONG).show();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    YouTube.Subscriptions.List getListRequest;
+                    try {
+                        getListRequest = mYouTube.subscriptions().list("snippet");
+                        getListRequest.setMine(true);
+                        SubscriptionListResponse listResponse = getListRequest.execute();
+                        List<Subscription> subscriptions = listResponse.getItems();
+                        if(subscriptions == null){
+                            Toast.makeText(getActivity().getApplicationContext(),"Nulllllll",Toast.LENGTH_LONG).show();
+                        }
+                        else{
+                            Toast.makeText(getActivity().getApplicationContext(),"Oh YEAH",Toast.LENGTH_LONG).show();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+
+            }.execute((Void) null);
         super.onActivityCreated(savedInstanceState);
     }
 }

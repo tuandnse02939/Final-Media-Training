@@ -24,6 +24,7 @@ import com.google.api.services.youtube.YouTube;
 
 import java.io.InputStream;
 
+import tuandn.com.mediatraining.Fragments.AudioRecordFragment;
 import tuandn.com.mediatraining.Fragments.EmptyFragment;
 import tuandn.com.mediatraining.Fragments.YoutubeFragment;
 import tuandn.com.mediatraining.R;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private tuandn.com.mediatraining.Fragments.LoginFragment mLoginFragment;
 
     private YoutubeFragment youtubeFragment;
+    private AudioRecordFragment audioRecordFragment;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -67,8 +69,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 R.string.close);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         mDrawerToggle.syncState();
-
+        //YouTube Fragment
         youtubeFragment= new YoutubeFragment();
+        //AudioRecord Fragment
+        audioRecordFragment = new AudioRecordFragment();
 
     }
 
@@ -82,10 +86,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 FragmentTransaction ft1 = getSupportFragmentManager().beginTransaction();
                 ft1.replace(R.id.fragment_content,youtubeFragment).commit();
                 break;
-//            case R.id.drawer_item_2:
-//                FragmentTransaction ft2 = getSupportFragmentManager().beginTransaction();
-//                ft2.replace(R.id.fragment_content, floatingLabelFragment).commit();
-//                break;
+            case R.id.drawer_item_2:
+                FragmentTransaction ft2 = getSupportFragmentManager().beginTransaction();
+                ft2.replace(R.id.fragment_content, audioRecordFragment).commit();
+                break;
 //            case R.id.drawer_item_3:
 //                FragmentTransaction ft3 = getSupportFragmentManager().beginTransaction();
 //                ft3.replace(R.id.fragment_content, floatingButtonFragment).commit();
