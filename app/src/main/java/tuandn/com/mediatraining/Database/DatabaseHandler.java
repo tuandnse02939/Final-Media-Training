@@ -44,6 +44,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         super(context, name, factory, version);
     }
 
+    public DatabaseHandler(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_AUDIO);
@@ -78,16 +82,25 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
     public void deleteAudio(int audioID){
-
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_AUDIO, COLUMN_AUDIO_ID + "=?",
+                new String[]{String.valueOf(audioID)});
+        closeDatabse();
     }
 
-    public void addAudio(String fileName){
+    public boolean addAudio(String fileName){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_AUDIO_NAME, fileName);
         values.put(COLUMN_AUDIO_DATE, getCurrentDate());
-        db.insert(TABLE_AUDIO, null, values);
-        closeDatabse();
+        if (db.insert(TABLE_AUDIO, null, values)!=0) {
+            closeDatabse();
+            return true;
+        }
+        else{
+            closeDatabse();
+            return false;
+        }
     }
 
     public void closeDatabse() {

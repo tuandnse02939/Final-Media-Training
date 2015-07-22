@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
 <RelativeLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:id="@+id/audio_active">
     <Button
         android:layout_width="150dp"
         android:layout_height="150dp"
@@ -21,6 +23,16 @@
         android:layout_alignTop="@+id/audio_button1"
         android:layout_toEndOf="@+id/audio_button1" />
 </RelativeLayout>
+
+    <fragment
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/list_audio"
+        android:layout_marginTop="250dp"
+        android:name="tuandn.com.mediatraining.Fragments.ListAudioFragment"
+        tools:layout="@layout/fragment_list_audio"
+        >
+    </fragment>
 
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"

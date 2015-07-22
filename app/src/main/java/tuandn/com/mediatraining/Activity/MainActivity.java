@@ -26,6 +26,7 @@ import java.io.InputStream;
 
 import tuandn.com.mediatraining.Fragments.AudioRecordFragment;
 import tuandn.com.mediatraining.Fragments.EmptyFragment;
+import tuandn.com.mediatraining.Fragments.ListAudioFragment;
 import tuandn.com.mediatraining.Fragments.YoutubeFragment;
 import tuandn.com.mediatraining.R;
 
@@ -73,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         youtubeFragment= new YoutubeFragment();
         //AudioRecord Fragment
         audioRecordFragment = new AudioRecordFragment();
+
+//        getSupportFragmentManager().beginTransaction().add(R.id.list_audio, new ListAudioFragment(), "tag").commit();
 
     }
 

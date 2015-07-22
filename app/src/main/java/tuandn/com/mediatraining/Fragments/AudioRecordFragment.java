@@ -13,10 +13,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
+import tuandn.com.mediatraining.Adapter.ListAudioAdapter;
+import tuandn.com.mediatraining.Database.DatabaseHandler;
+import tuandn.com.mediatraining.Model.AudioFile;
 import tuandn.com.mediatraining.Mp4Wrapper.Mp4ParserWrapper;
 import tuandn.com.mediatraining.R;
 
@@ -39,14 +44,18 @@ public class AudioRecordFragment extends Fragment {
     private FloatingActionButton fab,fab_pause,fab_stop,fab_continue;
     private String status, targetFilename;
     private MediaRecorder mediaRecorder;
+    private ArrayList<AudioFile> listAudio;
 
     private boolean isPaused = false;
+    private DatabaseHandler handler;
+    private String filenameToSaveDB;
+    private ListAudioFragment mListFragment = new ListAudioFragment();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_audio_record, container, false);
-        return view;
+            View view = inflater.inflate(R.layout.fragment_audio_record, container, false);
+            return view;
     }
 
     @Override
@@ -56,8 +65,23 @@ public class AudioRecordFragment extends Fragment {
         button1 = (Button) getView().findViewById(R.id.audio_button1);
         button2 = (Button) getView().findViewById(R.id.audio_button2);
 
+        mListFragment = (ListAudioFragment) getChildFragmentManager().findFragmentById(R.id.list_audio);
+        listAudio = new ArrayList<AudioFile>();
+        handler = new DatabaseHandler(getActivity().getApplicationContext());
+
+        listAudio = handler.getListAudio();
+        if(listAudio.size() != 0){
+            ListAudioAdapter la= new ListAudioAdapter(getActivity().getApplicationContext(), listAudio);
+            mListFragment.setListAdapter(la);
+        }
+        else {
+            Toast.makeText(getActivity().getApplicationContext(),"Empty",Toast.LENGTH_LONG).show();
+        }
+
         status = NOT_RECORD;
         updateUI();
+
+        handler = new DatabaseHandler(getActivity().getApplicationContext());
 
         fab = (FloatingActionButton) getView().findViewById (R.id.audio_floating_button);
 
@@ -65,10 +89,11 @@ public class AudioRecordFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if (status.equals(FINISHED) || status.equals(NOT_RECORD)) {
-                    targetFilename = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
-                            + "Record_"
+                    filenameToSaveDB = "Record_"
                             + System.currentTimeMillis()
                             + ".mp3";
+                    targetFilename = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
+                            +filenameToSaveDB ;
                     record();
                     status = RECORDDING;
                     updateUI();
@@ -84,10 +109,11 @@ public class AudioRecordFragment extends Fragment {
             public void onClick(View v) {
                 switch (status) {
                     case NOT_RECORD:
-                        targetFilename = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
-                                + "Record_"
+                        filenameToSaveDB = "Record_"
                                 + System.currentTimeMillis()
                                 + ".mp3";
+                        targetFilename = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
+                                +filenameToSaveDB ;
                         record();
                         status = RECORDDING;
                         updateUI();
@@ -103,11 +129,11 @@ public class AudioRecordFragment extends Fragment {
                         updateUI();
                         break;
                     case FINISHED:
-                        targetFilename = Environment.getExternalStorageDirectory().getAbsolutePath()
-                                + File.separator
-                                + "Record_"
+                        filenameToSaveDB = "Record_"
                                 + System.currentTimeMillis()
                                 + ".mp3";
+                        targetFilename = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
+                                +filenameToSaveDB ;
                         record();
                         status = RECORDDING;
                         updateUI();
@@ -201,11 +227,16 @@ public class AudioRecordFragment extends Fragment {
         if (!isPaused) {
             mediaRecorder.stop();
             mediaRecorder.release();
-//            try {
-                Mp4ParserWrapper.append(targetFilename, getTemporaryFileName());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
+            Mp4ParserWrapper.append(targetFilename, getTemporaryFileName());
+        }
+        if(handler.addAudio(filenameToSaveDB)){
+            Snackbar.make(getView(),"File recorded successfully",Snackbar.LENGTH_LONG).show();
+            listAudio = handler.getListAudio();
+            ListAudioAdapter la= new ListAudioAdapter(getActivity().getApplicationContext(), listAudio);
+            mListFragment.setListAdapter(la);
+        }
+        else {
+            Snackbar.make(getView(),"File recorded fail",Snackbar.LENGTH_LONG).show();
         }
         File f = new File(getTemporaryFileName());
         f.delete();
@@ -221,7 +252,4 @@ public class AudioRecordFragment extends Fragment {
             startActivity(intent);
         }
     }
-
-
-
 }
