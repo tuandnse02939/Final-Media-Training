@@ -103,6 +103,8 @@ public class AudioRecordFragment extends Fragment {
                             +filenameToSaveDB ;
                     record();
                     status = RECORDDING;
+                    mChronometer.setBase(SystemClock.elapsedRealtime());
+                    mChronometer.start();
                     updateUI();
                 }
                 else {
