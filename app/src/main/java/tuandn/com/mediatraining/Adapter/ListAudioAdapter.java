@@ -1,6 +1,9 @@
 package tuandn.com.mediatraining.Adapter;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +12,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import tuandn.com.mediatraining.Model.AudioFile;
@@ -51,9 +55,25 @@ public class ListAudioAdapter extends ArrayAdapter<AudioFile> {
         }
         //Set Audio Detail
         holder.name.setText(mList.get(position).getName());
+        final String fileName = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + mList.get(position).getName();
         holder.date.setText(mList.get(position).getDate());
+        holder.play_audio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                File file = new File(fileName);
+                if (file.exists()) {
+                    Intent intent = new Intent();
+                    intent.setAction(android.content.Intent.ACTION_VIEW);
+                    intent.setDataAndType(Uri.fromFile(file), "audio/*");
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent);
+                }
+            }
+        });
 
         return convertView;
     }
+
+
 
 }
