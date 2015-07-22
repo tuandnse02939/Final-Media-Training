@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Chronometer;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -70,8 +69,11 @@ public class AudioRecordFragment extends Fragment {
         button1 = (Button) getView().findViewById(R.id.audio_button1);
         button2 = (Button) getView().findViewById(R.id.audio_button2);
 
+        //Display List Recorded File
         mListFragment = (ListAudioFragment) getChildFragmentManager().findFragmentById(R.id.list_audio);
         listAudio = new ArrayList<AudioFile>();
+
+        //Get List Recorded File From DB
         handler = new DatabaseHandler(getActivity().getApplicationContext());
 
         listAudio = handler.getListAudio();
@@ -82,14 +84,13 @@ public class AudioRecordFragment extends Fragment {
         else {
             Toast.makeText(getActivity().getApplicationContext(),"Empty",Toast.LENGTH_LONG).show();
         }
-
+        //Define Chronometer
         mChronometer = (Chronometer) getView().findViewById(R.id.chronometer);
-
+        //Update UI when first time start
         status = NOT_RECORD;
         updateUI();
 
-        handler = new DatabaseHandler(getActivity().getApplicationContext());
-
+        //Setting for Floating Button
         fab = (FloatingActionButton) getView().findViewById (R.id.audio_floating_button);
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -113,6 +114,7 @@ public class AudioRecordFragment extends Fragment {
             }
         });
 
+        //Set Actions for Button 1
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -159,6 +161,8 @@ public class AudioRecordFragment extends Fragment {
                 }
             }
         });
+
+        //Set Actions for Button 2
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -193,6 +197,7 @@ public class AudioRecordFragment extends Fragment {
         return Environment.getExternalStorageDirectory().getAbsolutePath() +File.separator+ "tmprecord";
     }
 
+    //Update Buttons base on Status
     private void updateUI(){
         switch (status) {
             case NOT_RECORD:
