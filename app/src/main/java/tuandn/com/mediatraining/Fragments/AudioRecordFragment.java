@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -13,6 +14,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Chronometer;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -50,6 +53,8 @@ public class AudioRecordFragment extends Fragment {
     private DatabaseHandler handler;
     private String filenameToSaveDB;
     private ListAudioFragment mListFragment = new ListAudioFragment();
+    private Chronometer mChronometer;
+    private long timeWhenStopped = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -77,6 +82,8 @@ public class AudioRecordFragment extends Fragment {
         else {
             Toast.makeText(getActivity().getApplicationContext(),"Empty",Toast.LENGTH_LONG).show();
         }
+
+        mChronometer = (Chronometer) getView().findViewById(R.id.chronometer);
 
         status = NOT_RECORD;
         updateUI();
@@ -116,16 +123,22 @@ public class AudioRecordFragment extends Fragment {
                                 +filenameToSaveDB ;
                         record();
                         status = RECORDDING;
+                        mChronometer.setBase(SystemClock.elapsedRealtime());
+                        mChronometer.start();
                         updateUI();
                         break;
                     case RECORDDING:
                         pause();
                         status = ON_PAUSING;
+                        timeWhenStopped = mChronometer.getBase() - SystemClock.elapsedRealtime();
+                        mChronometer.stop();
                         updateUI();
                         break;
                     case ON_PAUSING:
                         record();
                         status = RECORDDING;
+                        mChronometer.setBase(SystemClock.elapsedRealtime() + timeWhenStopped);
+                        mChronometer.start();
                         updateUI();
                         break;
                     case FINISHED:
@@ -136,6 +149,9 @@ public class AudioRecordFragment extends Fragment {
                                 +filenameToSaveDB ;
                         record();
                         status = RECORDDING;
+                        timeWhenStopped = 0;
+                        mChronometer.setBase(SystemClock.elapsedRealtime());
+                        mChronometer.start();
                         updateUI();
                         break;
                 }
@@ -150,6 +166,8 @@ public class AudioRecordFragment extends Fragment {
                         break;
                     case RECORDDING:
                         finish();
+                        mChronometer.stop();
+                        timeWhenStopped = 0;
                         status = FINISHED;
                         updateUI();
                         break;
@@ -157,6 +175,8 @@ public class AudioRecordFragment extends Fragment {
                         finish();
                         status = FINISHED;
                         updateUI();
+                        mChronometer.stop();
+                        timeWhenStopped = 0;
                         break;
                     case FINISHED:
                         play();

@@ -8,27 +8,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/audio_active">
+
+    <Chronometer android:id="@+id/chronometer"
+        android:format="@string/chronometer_initial_format"
+        android:textSize="80dp"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="97dp"
+        android:layout_weight="0"
+        android:layout_alignEnd="@+id/audio_button2" />
     <Button
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="170dp"
+        android:layout_height="170dp"
         android:id="@+id/audio_button1"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_marginTop="97dp" />
 
     <Button
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="170dp"
+        android:layout_height="170dp"
         android:id="@+id/audio_button2"
         android:layout_alignTop="@+id/audio_button1"
-        android:layout_toEndOf="@+id/audio_button1" />
+        android:layout_alignParentEnd="true" />
 </RelativeLayout>
 
     <fragment
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/list_audio"
-        android:layout_marginTop="250dp"
+        android:layout_marginTop="270dp"
         android:name="tuandn.com.mediatraining.Fragments.ListAudioFragment"
         tools:layout="@layout/fragment_list_audio"
         >

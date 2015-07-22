@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,6 +68,8 @@ public class ListAudioAdapter extends ArrayAdapter<AudioFile> {
                     intent.setDataAndType(Uri.fromFile(file), "audio/*");
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(intent);
+                } else {
+                    Snackbar.make(v,"File not found",Snackbar.LENGTH_LONG).show();
                 }
             }
         });
