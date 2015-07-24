@@ -82,7 +82,11 @@ public class AudioRecordFragment extends Fragment {
             mListFragment.setListAdapter(la);
         }
         else {
-            Toast.makeText(getActivity().getApplicationContext(),"Empty",Toast.LENGTH_LONG).show();
+            mListFragment.setEmptyText("No file recorded");
+            if (isResumed())
+                mListFragment.setListShown(true);
+            else
+                mListFragment.setListShownNoAnimation(true);
         }
         //Define Chronometer
         mChronometer = (Chronometer) getView().findViewById(R.id.chronometer);
@@ -231,6 +235,7 @@ public class AudioRecordFragment extends Fragment {
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mediaRecorder.setAudioEncoder(DEFAULT_AUDIO_ENCODER);
         mediaRecorder.setOutputFile(getTemporaryFileName());
+        isPaused = false;
         try {
             mediaRecorder.prepare();
             mediaRecorder.start();
