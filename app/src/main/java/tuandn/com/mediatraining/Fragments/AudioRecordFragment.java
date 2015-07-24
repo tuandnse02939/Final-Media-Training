@@ -75,14 +75,15 @@ public class AudioRecordFragment extends Fragment {
 
         //Get List Recorded File From DB
         handler = new DatabaseHandler(getActivity().getApplicationContext());
-
         listAudio = handler.getListAudio();
+
+        //Check if list is empty or not
         if(listAudio.size() != 0){
             ListAudioAdapter la= new ListAudioAdapter(getActivity().getApplicationContext(), listAudio);
             mListFragment.setListAdapter(la);
         }
         else {
-            mListFragment.setEmptyText("No file recorded");
+            mListFragment.setEmptyText(getString(R.string.no_file_recorded));
             if (isResumed())
                 mListFragment.setListShown(true);
             else
@@ -113,7 +114,7 @@ public class AudioRecordFragment extends Fragment {
                     updateUI();
                 }
                 else {
-                    Snackbar.make(getView(),"Recording",Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(getView(),getString(R.string.recording),Snackbar.LENGTH_LONG).show();
                 }
             }
         });
@@ -262,13 +263,13 @@ public class AudioRecordFragment extends Fragment {
             Mp4ParserWrapper.append(targetFilename, getTemporaryFileName());
         }
         if(handler.addAudio(filenameToSaveDB)){
-            Snackbar.make(getView(),"File recorded successfully",Snackbar.LENGTH_LONG).show();
+            Snackbar.make(getView(),getString(R.string.record_successful),Snackbar.LENGTH_LONG).show();
             listAudio = handler.getListAudio();
             ListAudioAdapter la= new ListAudioAdapter(getActivity().getApplicationContext(), listAudio);
             mListFragment.setListAdapter(la);
         }
         else {
-            Snackbar.make(getView(),"File recorded fail",Snackbar.LENGTH_LONG).show();
+            Snackbar.make(getView(),getString(R.string.record_failed),Snackbar.LENGTH_LONG).show();
         }
         File f = new File(getTemporaryFileName());
         f.delete();
