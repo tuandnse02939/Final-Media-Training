@@ -1,6 +1,7 @@
 package tuandn.com.mediatraining.Activity;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -16,6 +17,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
@@ -99,8 +101,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 ft2.replace(R.id.fragment_content, audioRecordFragment).commit();
                 break;
             case R.id.drawer_item_3:
-                FragmentTransaction ft3 = getSupportFragmentManager().beginTransaction();
-                ft3.replace(R.id.fragment_content, videoRecordFragment).commit();
+                if(getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                    FragmentTransaction ft3 = getSupportFragmentManager().beginTransaction();
+                    ft3.replace(R.id.fragment_content, videoRecordFragment).commit();
+                }
+                else{
+                    Toast.makeText(getApplicationContext(),"Camera doesn't available",Toast.LENGTH_LONG).show();
+                }
                 break;
 //            case R.id.drawer_item_4:
 //                FragmentTransaction ft4 = getSupportFragmentManager().beginTransaction();
