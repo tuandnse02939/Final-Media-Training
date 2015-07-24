@@ -27,6 +27,8 @@ import java.io.InputStream;
 import tuandn.com.mediatraining.Fragments.AudioRecordFragment;
 import tuandn.com.mediatraining.Fragments.EmptyFragment;
 import tuandn.com.mediatraining.Fragments.ListAudioFragment;
+import tuandn.com.mediatraining.Fragments.LoginFragment;
+import tuandn.com.mediatraining.Fragments.VideoRecordFragment;
 import tuandn.com.mediatraining.Fragments.YoutubeFragment;
 import tuandn.com.mediatraining.R;
 
@@ -40,10 +42,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private int mNavItemId;
     private static final String NAV_ITEM_ID = "navItemId";
     public GoogleApiClient mGoogleApiClient;
-    private tuandn.com.mediatraining.Fragments.LoginFragment mLoginFragment;
+    private LoginFragment mLoginFragment;
 
     private YoutubeFragment youtubeFragment;
     private AudioRecordFragment audioRecordFragment;
+    private VideoRecordFragment videoRecordFragment;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -74,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         youtubeFragment= new YoutubeFragment();
         //AudioRecord Fragment
         audioRecordFragment = new AudioRecordFragment();
+        //VideoRecordFragment
+        videoRecordFragment = new VideoRecordFragment();
 
 //        getSupportFragmentManager().beginTransaction().add(R.id.list_audio, new ListAudioFragment(), "tag").commit();
 
@@ -93,10 +98,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 FragmentTransaction ft2 = getSupportFragmentManager().beginTransaction();
                 ft2.replace(R.id.fragment_content, audioRecordFragment).commit();
                 break;
-//            case R.id.drawer_item_3:
-//                FragmentTransaction ft3 = getSupportFragmentManager().beginTransaction();
-//                ft3.replace(R.id.fragment_content, floatingButtonFragment).commit();
-//                break;
+            case R.id.drawer_item_3:
+                FragmentTransaction ft3 = getSupportFragmentManager().beginTransaction();
+                ft3.replace(R.id.fragment_content, videoRecordFragment).commit();
+                break;
 //            case R.id.drawer_item_4:
 //                FragmentTransaction ft4 = getSupportFragmentManager().beginTransaction();
 //                ft4.replace(R.id.fragment_content, coordinatorFragment).commit();
@@ -132,9 +137,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == mLoginFragment.RC_SIGN_IN) {
             mLoginFragment.onActivityResult(requestCode, resultCode, data);
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
+        } else if(requestCode == VideoRecordFragment.REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK){
+            videoRecordFragment.onActivityResult(requestCode, resultCode, data);
         }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
 }
