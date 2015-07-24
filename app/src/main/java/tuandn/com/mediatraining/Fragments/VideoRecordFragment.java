@@ -69,5 +69,6 @@ public class VideoRecordFragment extends Fragment{
     }
 
     private void videoRecord(){
+
     }
 }

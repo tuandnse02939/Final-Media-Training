@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -14,4 +15,11 @@
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:id="@+id/video_view"/>
+    <fragment
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="300dp"
+        android:id="@+id/video_file_list"
+        android:name="tuandn.com.mediatraining.Fragments.ListVideoRecordedFragment"
+        tools:layout="@layout/fragment_list_video"></fragment>
 </android.support.design.widget.CoordinatorLayout>

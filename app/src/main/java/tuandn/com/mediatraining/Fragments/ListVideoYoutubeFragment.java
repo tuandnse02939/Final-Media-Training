@@ -36,7 +36,7 @@ import tuandn.com.mediatraining.R;
 /**
  * Created by Anh Trung on 7/8/2015.
  */
-public class ListVideoFragment extends Fragment {
+public class ListVideoYoutubeFragment extends Fragment {
     public static final String ARG_PAGE = "ARG_PAGE";
     public static final String API_KEY = "AIzaSyD0MwUad7hVnPWiuX5HiOWCEnf2VVGd8gY";
     private static final String PREF_ACCOUNT_NAME = "accountName";
@@ -49,10 +49,10 @@ public class ListVideoFragment extends Fragment {
     private YouTube mYouTube;
     public static final String[] SCOPES = {Scopes.PROFILE, YouTubeScopes.YOUTUBE, YouTubeScopes.YOUTUBE_FORCE_SSL, YouTubeScopes.YOUTUBEPARTNER, YouTubeScopes.YOUTUBE_READONLY};
 
-    public static ListVideoFragment newInstance(int page) {
+    public static ListVideoYoutubeFragment newInstance(int page) {
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
-        ListVideoFragment fragment = new ListVideoFragment();
+        ListVideoYoutubeFragment fragment = new ListVideoYoutubeFragment();
         fragment.setArguments(args);
         return fragment;
     }
