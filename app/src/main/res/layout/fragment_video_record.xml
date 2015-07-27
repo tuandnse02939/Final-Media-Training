@@ -15,11 +15,20 @@
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:id="@+id/video_view"/>
-    <fragment
+    <SurfaceView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="300dp"
-        android:id="@+id/video_file_list"
-        android:name="tuandn.com.mediatraining.Fragments.ListVideoRecordedFragment"
-        tools:layout="@layout/fragment_list_video"></fragment>
+        android:layout_height="400dp"
+        android:id="@+id/surface"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/video_record"
+        android:gravity="bottom|center"/>
+    <!--<fragment-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_marginTop="300dp"-->
+        <!--android:id="@+id/video_file_list"-->
+        <!--android:name="tuandn.com.mediatraining.Fragments.ListVideoRecordedFragment"-->
+        <!--tools:layout="@layout/fragment_list_video"></fragment>-->
 </android.support.design.widget.CoordinatorLayout>
