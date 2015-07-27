@@ -26,6 +26,7 @@ public class ListVideoAdapter extends ArrayAdapter<MediaFile> {
     private Activity activity;
     private final ArrayList<MediaFile> mList;
     private VideoView videoView;
+    private MediaController videoMediaController;
 
     public ListVideoAdapter(Activity activity, ArrayList<MediaFile> mList) {
         super(activity, R.layout.fragment_list_audio, mList);
@@ -45,14 +46,17 @@ public class ListVideoAdapter extends ArrayAdapter<MediaFile> {
         LayoutInflater inflater = (LayoutInflater) activity
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final ViewHolder holder;
-        videoView = (VideoView) activity.findViewById(R.id.video_view);
+
+        videoView               = (VideoView) activity.findViewById(R.id.video_view);
+        videoMediaController    = new MediaController(activity);
+
         if(convertView == null){
             convertView = inflater.from(activity).inflate(R.layout.fragment_list_video,null);
             holder = new ViewHolder();
-            holder.name = (TextView) convertView.findViewById(R.id.video_file_name);
-            holder.date = (TextView) convertView.findViewById(R.id.video_file_date);
-            holder.length = (TextView) convertView.findViewById(R.id.video_file_length);
-            holder.play_video = (Button) convertView.findViewById(R.id.video_play_button);
+            holder.name         = (TextView) convertView.findViewById(R.id.video_file_name);
+            holder.date         = (TextView) convertView.findViewById(R.id.video_file_date);
+            holder.length       = (TextView) convertView.findViewById(R.id.video_file_length);
+            holder.play_video   = (Button)   convertView.findViewById(R.id.video_play_button);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder)convertView.getTag();
@@ -66,7 +70,10 @@ public class ListVideoAdapter extends ArrayAdapter<MediaFile> {
             public void onClick(View v) {
                 File file = new File(fileName);
                 if (file.exists()) {
-                    MediaController videoMediaController = new MediaController(activity);
+                    if(videoView.isPlaying())
+                    {
+                        videoView.stopPlayback();
+                    }
                     videoView.setVideoPath(fileName);
                     videoMediaController.setMediaPlayer(videoView);
                     videoView.setMediaController(videoMediaController);
