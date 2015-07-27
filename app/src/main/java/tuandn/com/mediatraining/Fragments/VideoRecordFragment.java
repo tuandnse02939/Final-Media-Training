@@ -34,6 +34,10 @@ import tuandn.com.mediatraining.R;
  */
 public class VideoRecordFragment extends Fragment{
 
+    public static final String RECORDING = "RECORDING";
+    public static final String ON_PAUSING = "ON_PAUSING";
+    public static final String FINISHED = "FINISHED";
+
     private FloatingActionButton fab;
     public static final int     REQUEST_VIDEO_CAPTURE = 1;
     private Activity            mActivity;
@@ -42,6 +46,7 @@ public class VideoRecordFragment extends Fragment{
 
     private String              filenameToSaveDB;
     private String              targetFilename;
+    private String              status;
     private Button              videoRecord1,videoRecord2;
     private MediaRecorder       recorder;
     private SurfaceView         surfaceView;
@@ -82,40 +87,28 @@ public class VideoRecordFragment extends Fragment{
         secondLayout.setVisibility(View.GONE);
 
         mVideoView      = (VideoView)   getView().findViewById(R.id.video_view);
+        mVideoView.setVisibility(View.VISIBLE);
         videoRecord1 = (Button)      getView().findViewById(R.id.video_record1);
         videoRecord2 = (Button)      getView().findViewById(R.id.video_record2);
         surfaceView     = (SurfaceView) getView().findViewById(R.id.surface);
         surfaceHolder   = surfaceView.getHolder();
 
 
-        listVideo = handler.getListVideo();
-        //Set List for ListVideoRecoredFragment
-        if(listVideo.size() != 0){
-            ListVideoAdapter la= new ListVideoAdapter(getActivity(), listVideo);
-            mListFragment.setListAdapter(la);
-        }
-        else {
-            mListFragment.setEmptyText(getString(R.string.no_file_recorded));
-            if (isResumed())
-                mListFragment.setListShown(true);
-            else
-                mListFragment.setListShownNoAnimation(true);
-        }
+        reloadList();
 
         //Setting for Floating Button
         fab = (FloatingActionButton) getView().findViewById (R.id.video_floating_button);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //Update UI Layout
+                mVideoView.setVisibility(View.GONE);
+                mainLayout.setVisibility(View.GONE);
+                secondLayout.setVisibility(View.VISIBLE);
+                status = RECORDING;
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                    //Update UI Layout
-                    mainLayout.setVisibility(View.GONE);
-                    secondLayout.setVisibility(View.VISIBLE);
                     useCameraAPI();
                 } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    //Update UI Layout
-                    mainLayout.setVisibility(View.GONE);
-                    secondLayout.setVisibility(View.VISIBLE);
                     useCameraAPI();
                 }
             }
@@ -127,13 +120,18 @@ public class VideoRecordFragment extends Fragment{
                 recorder.stop();
                 recorder.reset();
                 recorder.release();
+                mVideoView.setVisibility(View.VISIBLE);
                 if(handler.addMediaFile(filenameToSaveDB,handler.VIDEO_TYPE)){
-                    Toast.makeText(mContext, "Success", Toast.LENGTH_LONG).show();
+                    Toast.makeText(mContext, mActivity.getString(R.string.video_record_successful), Toast.LENGTH_LONG).show();
+                }
+                else {
+                    Toast.makeText(mContext, mActivity.getString(R.string.video_record_failed), Toast.LENGTH_LONG).show();
                 }
                 camera.stopPreview();
                 camera.release();
                 mainLayout.setVisibility(View.VISIBLE);
                 secondLayout.setVisibility(View.GONE);
+                reloadList();
             }
         });
 
@@ -151,7 +149,21 @@ public class VideoRecordFragment extends Fragment{
         });
     }
 
-
+    private void reloadList(){
+        listVideo = handler.getListVideo();
+        //Set List for ListVideoRecoredFragment
+        if(listVideo.size() != 0){
+            ListVideoAdapter la= new ListVideoAdapter(getActivity(), listVideo);
+            mListFragment.setListAdapter(la);
+        }
+        else {
+            mListFragment.setEmptyText(getString(R.string.no_file_recorded));
+            if (isResumed())
+                mListFragment.setListShown(true);
+            else
+                mListFragment.setListShownNoAnimation(true);
+        }
+    }
 
 
     private void useCameraAPI(){
