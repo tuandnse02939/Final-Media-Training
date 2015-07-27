@@ -10,24 +10,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.File;
 import java.util.ArrayList;
 
-import tuandn.com.mediatraining.Model.AudioFile;
+import tuandn.com.mediatraining.Model.MediaFile;
 import tuandn.com.mediatraining.R;
 
 /**
  * Created by Anh Trung on 7/22/2015.
  */
-public class ListAudioAdapter extends ArrayAdapter<AudioFile> {
+public class ListAudioAdapter extends ArrayAdapter<MediaFile> {
 
     private Context context;
-    private final ArrayList<AudioFile> mList;
+    private final ArrayList<MediaFile> mList;
 
-    public ListAudioAdapter(Context context, ArrayList<AudioFile> mList) {
+    public ListAudioAdapter(Context context, ArrayList<MediaFile> mList) {
         super(context, R.layout.fragment_list_audio, mList);
         this.context = context;
         this.mList = mList;

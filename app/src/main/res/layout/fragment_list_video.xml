@@ -6,7 +6,7 @@
     <Button
         android:layout_width="70dp"
         android:layout_height="70dp"
-        android:id="@+id/audio_play_button"
+        android:id="@+id/video_play_button"
         android:background="@drawable/play_button"/>
 
     <TextView
@@ -16,16 +16,16 @@
         android:text="Test"
         android:textColor="@color/background_material_dark"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/audio_play_button"
-        android:layout_toEndOf="@+id/audio_play_button" />
+        android:layout_toRightOf="@+id/video_play_button"
+        android:layout_toEndOf="@+id/video_play_button" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/audio_file_date"
+        android:id="@+id/video_file_date"
         android:text="Test"
         android:textColor="@color/background_material_dark"
-        android:layout_alignBottom="@+id/audio_play_button"
-        android:layout_toEndOf="@+id/audio_play_button" />
+        android:layout_alignBottom="@+id/video_play_button"
+        android:layout_toEndOf="@+id/video_play_button" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -33,9 +33,9 @@
         android:id="@+id/video_file_length"
         android:text="Test"
         android:textColor="@color/background_material_dark"
-        android:layout_alignBaseline="@+id/audio_play_button"
-        android:layout_alignBottom="@+id/audio_play_button"
-        android:layout_toRightOf="@+id/audio_play_button"
-        android:layout_toEndOf="@+id/audio_play_button" />
+        android:layout_alignBaseline="@+id/video_play_button"
+        android:layout_alignBottom="@+id/video_play_button"
+        android:layout_toRightOf="@+id/video_play_button"
+        android:layout_toEndOf="@+id/video_play_button" />
 
 </RelativeLayout>

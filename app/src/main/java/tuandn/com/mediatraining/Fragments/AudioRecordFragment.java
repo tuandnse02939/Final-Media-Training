@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Chronometer;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +22,7 @@ import java.util.ArrayList;
 
 import tuandn.com.mediatraining.Adapter.ListAudioAdapter;
 import tuandn.com.mediatraining.Database.DatabaseHandler;
-import tuandn.com.mediatraining.Model.AudioFile;
+import tuandn.com.mediatraining.Model.MediaFile;
 import tuandn.com.mediatraining.Mp4Wrapper.Mp4ParserWrapper;
 import tuandn.com.mediatraining.R;
 
@@ -46,7 +45,7 @@ public class AudioRecordFragment extends Fragment {
     private FloatingActionButton fab;
     private String status, targetFilename;
     private MediaRecorder mediaRecorder;
-    private ArrayList<AudioFile> listAudio;
+    private ArrayList<MediaFile> listAudio;
 
     private boolean isPaused = false;
     private DatabaseHandler handler;
@@ -71,7 +70,7 @@ public class AudioRecordFragment extends Fragment {
 
         //Display List Recorded File
         mListFragment = (ListAudioFragment) getChildFragmentManager().findFragmentById(R.id.list_audio);
-        listAudio = new ArrayList<AudioFile>();
+        listAudio = new ArrayList<MediaFile>();
 
         //Get List Recorded File From DB
         handler = new DatabaseHandler(getActivity().getApplicationContext());
@@ -262,7 +261,7 @@ public class AudioRecordFragment extends Fragment {
             mediaRecorder.release();
             Mp4ParserWrapper.append(targetFilename, getTemporaryFileName());
         }
-        if(handler.addAudio(filenameToSaveDB)){
+        if(handler.addMediaFile(filenameToSaveDB, handler.AUDIO_TYPE)){
             Snackbar.make(getView(),getString(R.string.record_successful),Snackbar.LENGTH_LONG).show();
             listAudio = handler.getListAudio();
             ListAudioAdapter la= new ListAudioAdapter(getActivity().getApplicationContext(), listAudio);

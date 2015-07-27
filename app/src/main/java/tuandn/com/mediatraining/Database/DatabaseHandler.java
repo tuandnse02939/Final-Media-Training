@@ -11,12 +11,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import tuandn.com.mediatraining.Model.AudioFile;
+import tuandn.com.mediatraining.Model.MediaFile;
 
 /**
  * Created by Anh Trung on 7/21/2015.
  */
 public class DatabaseHandler extends SQLiteOpenHelper {
+
+    public static final int AUDIO_TYPE = 1;
+    public static final int VIDEO_TYPE = 2;
 
     // Database Version
     private static final int DATABASE_VERSION = 1;
@@ -25,19 +28,23 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "FILE_MANAGEMENT";
 
     // Table Names
-    private static final String TABLE_AUDIO = "TABLE_AUDIO";
-    private static final String TABLE_VIDEO = "TABLE_VIDEO";
+    private static final String TABLE_MEDIA= "TABLE_MEDIA";
 
     // Audio Table - column names
-    private static final String COLUMN_AUDIO_ID = "COLUMN_AUDIO_ID";
-    private static final String COLUMN_AUDIO_NAME = "COLUMN_AUDIO_NAME";
-    private static final String COLUMN_AUDIO_DATE = "COLUMN_AUDIO_DATE";
+    private static final String COLUMN_MEDIA_ID = "COLUMN_MEDIA_ID";
+    private static final String COLUMN_MEDIA_NAME = "COLUMN_MEDIA_NAME";
+    private static final String COLUMN_MEDIA_TYPE = "COLUMN_MEDIA_TYPE";
+    private static final String COLUMN_MEDIA_DATE = "COLUMN_MEDIA_DATE";
 
     // AUDIO Table create statement
-    private static final String CREATE_TABLE_AUDIO = "CREATE TABLE "
-            + TABLE_AUDIO + "(" + COLUMN_AUDIO_ID + " INTEGER PRIMARY KEY,"
-            + COLUMN_AUDIO_NAME + " TEXT," + COLUMN_AUDIO_DATE
-            + " TEXT" + ")";
+    private static final String CREATE_TABLE_MEDIA = "CREATE TABLE "
+            + TABLE_MEDIA
+            + "("
+            + COLUMN_MEDIA_ID + " INTEGER PRIMARY KEY,"
+            + COLUMN_MEDIA_NAME + " TEXT,"
+            + COLUMN_MEDIA_TYPE + " TEXT,"
+            + COLUMN_MEDIA_DATE + " TEXT"
+            + ")";
 
 
     public DatabaseHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
@@ -50,7 +57,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_TABLE_AUDIO);
+        db.execSQL(CREATE_TABLE_MEDIA);
     }
 
     @Override
@@ -58,9 +65,32 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     }
 
-    public ArrayList<AudioFile> getListAudio(){
-        ArrayList<AudioFile> listAudio = new ArrayList<AudioFile>();
-        String selectQuery = "SELECT  * FROM " + TABLE_AUDIO;
+    public ArrayList<MediaFile> getListAudio(){
+        ArrayList<MediaFile> listAudio = new ArrayList<MediaFile>();
+        String selectQuery = "SELECT  * FROM " + TABLE_MEDIA + " WHERE " + COLUMN_MEDIA_TYPE + " = " +AUDIO_TYPE;
+
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (c.moveToFirst()) {
+            do {
+                MediaFile f = new MediaFile();
+                f.setId(c.getInt(c.getColumnIndex(COLUMN_MEDIA_ID)));
+                f.setName((c.getString(c
+                        .getColumnIndex(COLUMN_MEDIA_NAME))));
+                f.setDate(c.getString(c
+                        .getColumnIndex(COLUMN_MEDIA_DATE)));
+                listAudio.add(f);
+            } while (c.moveToNext());
+        }
+        closeDatabse();
+        return listAudio;
+    }
+
+    public ArrayList<MediaFile> getListVideo(){
+        ArrayList<MediaFile> listAudio = new ArrayList<MediaFile>();
+        String selectQuery = "SELECT  * FROM " + TABLE_MEDIA + " WHERE " + COLUMN_MEDIA_TYPE + " = " +VIDEO_TYPE;
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -68,12 +98,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (c.moveToFirst()) {
             do {
-                AudioFile f = new AudioFile();
-                f.setId(c.getInt(c.getColumnIndex(COLUMN_AUDIO_ID)));
+                MediaFile f = new MediaFile();
+                f.setId(c.getInt(c.getColumnIndex(COLUMN_MEDIA_ID)));
                 f.setName((c.getString(c
-                        .getColumnIndex(COLUMN_AUDIO_NAME))));
+                        .getColumnIndex(COLUMN_MEDIA_NAME))));
+                f.setType((c.getInt(c
+                        .getColumnIndex(COLUMN_MEDIA_TYPE))));
                 f.setDate(c.getString(c
-                        .getColumnIndex(COLUMN_AUDIO_DATE)));
+                        .getColumnIndex(COLUMN_MEDIA_DATE)));
                 listAudio.add(f);
             } while (c.moveToNext());
         }
@@ -83,17 +115,18 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public void deleteAudio(int audioID){
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_AUDIO, COLUMN_AUDIO_ID + "=?",
+        db.delete(TABLE_MEDIA, COLUMN_MEDIA_ID + "=?",
                 new String[]{String.valueOf(audioID)});
         closeDatabse();
     }
 
-    public boolean addAudio(String fileName){
+    public boolean addMediaFile(String fileName, int fileType){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(COLUMN_AUDIO_NAME, fileName);
-        values.put(COLUMN_AUDIO_DATE, getCurrentDate());
-        if (db.insert(TABLE_AUDIO, null, values)!=0) {
+        values.put(COLUMN_MEDIA_NAME, fileName);
+        values.put(COLUMN_MEDIA_TYPE, fileType);
+        values.put(COLUMN_MEDIA_DATE, getCurrentDate());
+        if (db.insert(TABLE_MEDIA, null, values)!=0) {
             closeDatabse();
             return true;
         }

@@ -22,8 +22,11 @@ import android.widget.VideoView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
-import tuandn.com.mediatraining.Adapter.ListAudioAdapter;
+import tuandn.com.mediatraining.Adapter.ListVideoAdapter;
+import tuandn.com.mediatraining.Database.DatabaseHandler;
+import tuandn.com.mediatraining.Model.MediaFile;
 import tuandn.com.mediatraining.R;
 
 /**
@@ -39,13 +42,15 @@ public class VideoRecordFragment extends Fragment{
 
     private String              filenameToSaveDB;
     private String              targetFilename;
-    private Button              videoRecord;
+    private Button              videoRecord1,videoRecord2;
     private MediaRecorder       recorder;
     private SurfaceView         surfaceView;
     private SurfaceHolder       surfaceHolder;
     private Camera              camera;
     private android.support.design.widget.CoordinatorLayout   mainLayout;
     private RelativeLayout      secondLayout;
+    private DatabaseHandler     handler;
+    private ArrayList<MediaFile> listVideo;
 
     private ListVideoRecordedFragment mListFragment = new ListVideoRecordedFragment();
 
@@ -62,7 +67,12 @@ public class VideoRecordFragment extends Fragment{
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        mActivity       = getActivity();
+        mContext        = getActivity().getApplicationContext();
+
         mListFragment = (ListVideoRecordedFragment) getChildFragmentManager().findFragmentById(R.id.video_file_list);
+
+        handler = new DatabaseHandler(mContext);
 
         mainLayout   = (CoordinatorLayout) getView().findViewById(R.id.main_video_record);
         secondLayout = (RelativeLayout) getView().findViewById(R.id.second_video_record);
@@ -71,17 +81,18 @@ public class VideoRecordFragment extends Fragment{
         mainLayout.setVisibility(View.VISIBLE);
         secondLayout.setVisibility(View.GONE);
 
-        mActivity       = getActivity();
-        mContext        = getActivity().getApplicationContext();
         mVideoView      = (VideoView)   getView().findViewById(R.id.video_view);
-        videoRecord     = (Button)      getView().findViewById(R.id.video_record1);
+        videoRecord1 = (Button)      getView().findViewById(R.id.video_record1);
+        videoRecord2 = (Button)      getView().findViewById(R.id.video_record2);
         surfaceView     = (SurfaceView) getView().findViewById(R.id.surface);
         surfaceHolder   = surfaceView.getHolder();
 
+
+        listVideo = handler.getListVideo();
         //Set List for ListVideoRecoredFragment
-        if(false){
-//            ListAudioAdapter la= new ListAudioAdapter(getActivity().getApplicationContext(), listAudio);
-//            mListFragment.setListAdapter(la);
+        if(listVideo.size() != 0){
+            ListVideoAdapter la= new ListVideoAdapter(getActivity(), listVideo);
+            mListFragment.setListAdapter(la);
         }
         else {
             mListFragment.setEmptyText(getString(R.string.no_file_recorded));
@@ -110,7 +121,23 @@ public class VideoRecordFragment extends Fragment{
             }
         });
 
-        videoRecord.setOnClickListener(new View.OnClickListener() {
+        videoRecord1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                recorder.stop();
+                recorder.reset();
+                recorder.release();
+                if(handler.addMediaFile(filenameToSaveDB,handler.VIDEO_TYPE)){
+                    Toast.makeText(mContext, "Success", Toast.LENGTH_LONG).show();
+                }
+                camera.stopPreview();
+                camera.release();
+                mainLayout.setVisibility(View.VISIBLE);
+                secondLayout.setVisibility(View.GONE);
+            }
+        });
+
+        videoRecord2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 recorder.stop();
@@ -119,7 +146,7 @@ public class VideoRecordFragment extends Fragment{
 
                 camera.stopPreview();
                 camera.release();
-                Toast.makeText(mContext,"Stopped",Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, "Stopped", Toast.LENGTH_LONG).show();
             }
         });
     }
