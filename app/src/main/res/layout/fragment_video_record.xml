@@ -3,32 +3,54 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <android.support.design.widget.FloatingActionButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/video_floating_button"
-        android:layout_gravity="end|bottom"
-        android:layout_margin="16dp"
-        android:src="@drawable/video_camera_icon"/>
-    <VideoView
+    <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:id="@+id/video_view"/>
-    <SurfaceView
+        android:layout_height="match_parent"
+        android:id="@+id/main_video_record">
+        <android.support.design.widget.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/video_floating_button"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="16dp"
+            android:src="@drawable/video_camera_icon"/>
+        <VideoView
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:id="@+id/video_view"/>
+        <fragment
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="300dp"
+            android:id="@+id/video_file_list"
+            android:name="tuandn.com.mediatraining.Fragments.ListVideoRecordedFragment"
+            tools:layout="@layout/fragment_list_video">
+        </fragment>
+    </android.support.design.widget.CoordinatorLayout>
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:id="@+id/surface"/>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/video_record"
-        android:gravity="bottom|center"/>
-    <!--<fragment-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_marginTop="300dp"-->
-        <!--android:id="@+id/video_file_list"-->
-        <!--android:name="tuandn.com.mediatraining.Fragments.ListVideoRecordedFragment"-->
-        <!--tools:layout="@layout/fragment_list_video"></fragment>-->
+        android:layout_height="match_parent"
+        android:id="@+id/second_video_record">
+        <SurfaceView
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:id="@+id/surface"/>
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/video_record1"
+            android:gravity="bottom|center"
+            android:background="@drawable/video_camera_icon"
+            android:layout_alignBottom="@+id/video_record2"
+            android:layout_toStartOf="@+id/video_record2" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/video_record2"
+            android:gravity="bottom|center"
+            android:layout_marginEnd="91dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="10dp" />
+    </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>

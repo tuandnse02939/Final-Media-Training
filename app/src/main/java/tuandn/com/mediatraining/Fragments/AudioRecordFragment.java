@@ -43,7 +43,7 @@ public class AudioRecordFragment extends Fragment {
                     : MediaRecorder.AudioEncoder.DEFAULT;
 
     private Button button1, button2;
-    private FloatingActionButton fab,fab_pause,fab_stop,fab_continue;
+    private FloatingActionButton fab;
     private String status, targetFilename;
     private MediaRecorder mediaRecorder;
     private ArrayList<AudioFile> listAudio;

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import tuandn.com.mediatraining.Fragments.ListVideoFragment;
+import tuandn.com.mediatraining.Fragments.ListVideoYoutubeFragment;
 
 /**
  * Created by Anh Trung on 7/7/2015.
@@ -26,7 +26,7 @@ public class ChannelAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        return ListVideoFragment.newInstance(position + 1);
+        return ListVideoYoutubeFragment.newInstance(position + 1);
     }
 
     @Override

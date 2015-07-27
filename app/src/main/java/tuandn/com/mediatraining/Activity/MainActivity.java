@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mLoginFragment = new tuandn.com.mediatraining.Fragments.LoginFragment();
         FragmentTransaction ft2 = getSupportFragmentManager().beginTransaction();
-        ft2.replace(R.id.fragment_content, mLoginFragment).commit();
+
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         audioRecordFragment = new AudioRecordFragment();
         //VideoRecordFragment
         videoRecordFragment = new VideoRecordFragment();
+        ft2.replace(R.id.fragment_content, videoRecordFragment).commit();
 
 //        getSupportFragmentManager().beginTransaction().add(R.id.list_audio, new ListAudioFragment(), "tag").commit();
 
