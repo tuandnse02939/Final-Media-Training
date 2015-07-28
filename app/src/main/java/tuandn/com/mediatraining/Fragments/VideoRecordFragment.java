@@ -2,6 +2,7 @@ package tuandn.com.mediatraining.Fragments;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.os.Build;
@@ -47,7 +48,7 @@ public class VideoRecordFragment extends Fragment{
     private String              filenameToSaveDB;
     private String              targetFilename;
     private String              status;
-    private Button              videoRecord1,videoRecord2, changeCamera;
+    private Button              videoRecord1,videoRecord2, changeCamera, flashControl;
     private MediaRecorder       recorder;
     private SurfaceView         surfaceView;
     private SurfaceHolder       surfaceHolder;
@@ -59,6 +60,9 @@ public class VideoRecordFragment extends Fragment{
     private boolean             cameraConfigured = false;
     private int                 cameraID = 0;
     private boolean             inPreview = false;
+    private boolean             isFlashAvailable = true;
+    private boolean             isFlashOn = false;
+    private Camera.Parameters   parameters;
 
     private ListVideoRecordedFragment mListFragment = new ListVideoRecordedFragment();
 
@@ -94,10 +98,15 @@ public class VideoRecordFragment extends Fragment{
         videoRecord1 = (Button)      getView().findViewById(R.id.video_record1);
         videoRecord2 = (Button)      getView().findViewById(R.id.video_record2);
         changeCamera = (Button)      getView().findViewById(R.id.video_record_change_camera);
+        flashControl = (Button)      getView().findViewById(R.id.flash);
         surfaceView     = (SurfaceView) getView().findViewById(R.id.surface);
         surfaceHolder   = surfaceView.getHolder();
 
         reloadList();
+
+        if(!getActivity().getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)){
+            isFlashAvailable = false;
+        }
 
         //Setting for Floating Button
         fab = (FloatingActionButton) getView().findViewById (R.id.video_floating_button);
@@ -179,6 +188,32 @@ public class VideoRecordFragment extends Fragment{
                 camera.release();
                 cameraID = (cameraID + 1) % 2;
                 useCameraAPI();
+            }
+        });
+
+        flashControl.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!isFlashAvailable){
+                    flashControl.setBackgroundResource(R.drawable.flash_off_icon);
+                }
+                else {
+                    camera.stopPreview();
+                    if(isFlashOn) {
+                        flashControl.setBackgroundResource(R.drawable.flash_off_icon);
+                        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+                        camera.setParameters(parameters);
+                        camera.startPreview();
+                        isFlashOn = false;
+                    }
+                    else{
+                        flashControl.setBackgroundResource(R.drawable.flash_on);
+                        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                        camera.setParameters(parameters);
+                        camera.startPreview();
+                        isFlashOn = true;
+                    }
+                }
             }
         });
     }
@@ -282,7 +317,7 @@ public class VideoRecordFragment extends Fragment{
             }
 
             if (!cameraConfigured) {
-                Camera.Parameters parameters = camera.getParameters();
+                parameters = camera.getParameters();
                 Camera.Size size = getBestPreviewSize(width, height, parameters);
 
                 if (size != null) {
