@@ -33,20 +33,21 @@
         android:id="@+id/second_video_record">
         <SurfaceView
             android:layout_width="match_parent"
-            android:layout_height="400dp"
+            android:layout_height="match_parent"
             android:id="@+id/surface"/>
         <Button
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:id="@+id/video_record1"
             android:gravity="bottom|center"
-            android:background="@drawable/video_camera_icon"
+            android:background="@drawable/stop_button"
             android:layout_alignBottom="@+id/video_record2"
-            android:layout_toStartOf="@+id/video_record2" />
+            android:layout_centerHorizontal="true" />
         <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:id="@+id/video_record2"
+            android:background="@drawable/pause_button"
             android:gravity="bottom|center"
             android:layout_marginEnd="91dp"
             android:layout_alignParentBottom="true"
@@ -58,7 +59,8 @@
             android:layout_height="40dp"
             android:id="@+id/video_record_change_camera"
             android:background="@drawable/change_camera"
-            android:layout_alignBottom="@+id/video_record2"
-            android:layout_alignParentStart="true" />
+            android:layout_alignBottom="@+id/video_record1"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="32dp" />
     </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>

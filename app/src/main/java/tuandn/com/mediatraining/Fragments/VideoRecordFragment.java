@@ -10,7 +10,6 @@ import android.os.Environment;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -28,6 +27,7 @@ import java.util.ArrayList;
 import tuandn.com.mediatraining.Adapter.ListVideoAdapter;
 import tuandn.com.mediatraining.Database.DatabaseHandler;
 import tuandn.com.mediatraining.Model.MediaFile;
+import tuandn.com.mediatraining.Mp4Wrapper.Mp4ParserWrapper;
 import tuandn.com.mediatraining.R;
 
 /**
@@ -37,7 +37,6 @@ public class VideoRecordFragment extends Fragment{
 
     public static final String RECORDING = "RECORDING";
     public static final String ON_PAUSING = "ON_PAUSING";
-    public static final String FINISHED = "FINISHED";
 
     private FloatingActionButton fab;
     public static final int     REQUEST_VIDEO_CAPTURE = 1;
@@ -98,7 +97,6 @@ public class VideoRecordFragment extends Fragment{
         surfaceView     = (SurfaceView) getView().findViewById(R.id.surface);
         surfaceHolder   = surfaceView.getHolder();
 
-
         reloadList();
 
         //Setting for Floating Button
@@ -112,6 +110,11 @@ public class VideoRecordFragment extends Fragment{
                 mainLayout.setVisibility(View.GONE);
                 secondLayout.setVisibility(View.VISIBLE);
                 status = RECORDING;
+                filenameToSaveDB = "Video_"
+                        + System.currentTimeMillis()
+                        + ".mp4";
+                targetFilename = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
+                        +filenameToSaveDB;
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                     useCameraAPI();
                 } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -123,18 +126,22 @@ public class VideoRecordFragment extends Fragment{
         videoRecord1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                recorder.stop();
-                recorder.reset();
-                recorder.release();
-                mVideoView.setVisibility(View.VISIBLE);
-                if(handler.addMediaFile(filenameToSaveDB,handler.VIDEO_TYPE)){
-                    Toast.makeText(mContext, mActivity.getString(R.string.video_record_successful), Toast.LENGTH_LONG).show();
+                if(status != ON_PAUSING) {
+                    recorder.stop();
+                    recorder.reset();
+                    recorder.release();
+                    Mp4ParserWrapper.append(targetFilename, getTemporaryFileName());
+                    File f = new File(getTemporaryFileName());
+                    f.delete();
+                    camera.stopPreview();
+                    camera.release();
                 }
-                else {
+                mVideoView.setVisibility(View.VISIBLE);
+                if (handler.addMediaFile(filenameToSaveDB, handler.VIDEO_TYPE)) {
+                    Toast.makeText(mContext, mActivity.getString(R.string.video_record_successful), Toast.LENGTH_LONG).show();
+                } else {
                     Toast.makeText(mContext, mActivity.getString(R.string.video_record_failed), Toast.LENGTH_LONG).show();
                 }
-                camera.stopPreview();
-                camera.release();
                 mainLayout.setVisibility(View.VISIBLE);
                 secondLayout.setVisibility(View.GONE);
                 reloadList();
@@ -145,13 +152,16 @@ public class VideoRecordFragment extends Fragment{
         videoRecord2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                recorder.stop();
-                recorder.reset();
-                recorder.release();
-
-                camera.stopPreview();
-                camera.release();
-                Toast.makeText(mContext, "Stopped", Toast.LENGTH_LONG).show();
+                if(status == RECORDING) {
+                    pause();
+                    status = ON_PAUSING;
+                    videoRecord2.setBackgroundResource(R.drawable.video_camera_icon);
+                }
+                else if(status == ON_PAUSING){
+                    status = RECORDING;
+                    videoRecord2.setBackgroundResource(R.drawable.pause_button);
+                    useCameraAPI();
+                }
             }
         });
 
@@ -173,6 +183,20 @@ public class VideoRecordFragment extends Fragment{
         });
     }
 
+    private void pause() {
+        recorder.stop();
+        recorder.reset();
+        recorder.release();
+
+        camera.stopPreview();
+        camera.release();
+        Toast.makeText(mContext, "Pause", Toast.LENGTH_LONG).show();
+
+        Mp4ParserWrapper.append(targetFilename, getTemporaryFileName());
+        File f = new File(getTemporaryFileName());
+        f.delete();
+    }
+
     private void reloadList(){
         listVideo = handler.getListVideo();
         //Set List for ListVideoRecoredFragment
@@ -191,27 +215,14 @@ public class VideoRecordFragment extends Fragment{
 
 
     private void useCameraAPI(){
-        camera = Camera.open(cameraID);
-        // If necessary, modify the returned Camera.Parameters object and call setParameters(Camera.Parameters).
-        camera.setDisplayOrientation(90);
-        initPreview(1024, 720);
-        // Set Camera orientation
         try {
             setupRecorder();
-            filenameToSaveDB = "Video_"
-                    + System.currentTimeMillis()
-                    + ".mp4";
-            targetFilename = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
-                    +filenameToSaveDB;
-            recorder.setOutputFile(targetFilename);
+            recorder.setOutputFile(getTemporaryFileName());
             recorder.prepare();
             recorder.start();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
     private void useCamera2API(){
@@ -220,11 +231,13 @@ public class VideoRecordFragment extends Fragment{
 
     private void setupRecorder(){
         try {
+            camera = Camera.open(cameraID);
+            camera.setDisplayOrientation(90);
+            initPreview(1024, 720);
             camera.setPreviewDisplay(surfaceHolder);
             camera.stopPreview();
             camera.unlock();
-//            camera.set
-
+            // If necessary, modify the returned Camera.Parameters object and call setParameters(Camera.Parameters).
             recorder = new MediaRecorder();
             recorder.setCamera(camera);
 //            recorder.setVideoSize(1024,720);
@@ -281,5 +294,7 @@ public class VideoRecordFragment extends Fragment{
         }
     }
 
-
+    private String getTemporaryFileName() {
+        return Environment.getExternalStorageDirectory().getAbsolutePath() +File.separator+ "tmpvideo";
+    }
 }
