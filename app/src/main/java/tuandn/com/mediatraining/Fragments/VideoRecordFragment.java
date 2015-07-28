@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -47,7 +48,7 @@ public class VideoRecordFragment extends Fragment{
     private String              filenameToSaveDB;
     private String              targetFilename;
     private String              status;
-    private Button              videoRecord1,videoRecord2;
+    private Button              videoRecord1,videoRecord2, changeCamera;
     private MediaRecorder       recorder;
     private SurfaceView         surfaceView;
     private SurfaceHolder       surfaceHolder;
@@ -56,6 +57,9 @@ public class VideoRecordFragment extends Fragment{
     private RelativeLayout      secondLayout;
     private DatabaseHandler     handler;
     private ArrayList<MediaFile> listVideo;
+    private boolean             cameraConfigured = false;
+    private int                 cameraID = 0;
+    private boolean             inPreview = false;
 
     private ListVideoRecordedFragment mListFragment = new ListVideoRecordedFragment();
 
@@ -90,6 +94,7 @@ public class VideoRecordFragment extends Fragment{
         mVideoView.setVisibility(View.VISIBLE);
         videoRecord1 = (Button)      getView().findViewById(R.id.video_record1);
         videoRecord2 = (Button)      getView().findViewById(R.id.video_record2);
+        changeCamera = (Button)      getView().findViewById(R.id.video_record_change_camera);
         surfaceView     = (SurfaceView) getView().findViewById(R.id.surface);
         surfaceHolder   = surfaceView.getHolder();
 
@@ -102,6 +107,7 @@ public class VideoRecordFragment extends Fragment{
             @Override
             public void onClick(View v) {
                 //Update UI Layout
+                inPreview = true;
                 mVideoView.setVisibility(View.GONE);
                 mainLayout.setVisibility(View.GONE);
                 secondLayout.setVisibility(View.VISIBLE);
@@ -132,6 +138,7 @@ public class VideoRecordFragment extends Fragment{
                 mainLayout.setVisibility(View.VISIBLE);
                 secondLayout.setVisibility(View.GONE);
                 reloadList();
+                inPreview = false;
             }
         });
 
@@ -145,6 +152,23 @@ public class VideoRecordFragment extends Fragment{
                 camera.stopPreview();
                 camera.release();
                 Toast.makeText(mContext, "Stopped", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        changeCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (inPreview) {
+                    camera.stopPreview();
+                    recorder.stop();
+                    recorder.reset();
+                    recorder.release();
+                    File f = new File(targetFilename);
+                    f.delete();
+                }
+                camera.release();
+                cameraID = (cameraID + 1) % 2;
+                useCameraAPI();
             }
         });
     }
@@ -167,23 +191,13 @@ public class VideoRecordFragment extends Fragment{
 
 
     private void useCameraAPI(){
-        camera = Camera.open();
+        camera = Camera.open(cameraID);
         // If necessary, modify the returned Camera.Parameters object and call setParameters(Camera.Parameters).
-        camera.getParameters();
-        // Set Camera orientation
         camera.setDisplayOrientation(90);
+        initPreview(1024, 720);
+        // Set Camera orientation
         try {
-            camera.setPreviewDisplay(surfaceHolder);
-            camera.stopPreview();
-            camera.unlock();
-
-            recorder = new MediaRecorder();
-            recorder.setCamera(camera);
-            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            recorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
-            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-            recorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
+            setupRecorder();
             filenameToSaveDB = "Video_"
                     + System.currentTimeMillis()
                     + ".mp4";
@@ -203,4 +217,69 @@ public class VideoRecordFragment extends Fragment{
     private void useCamera2API(){
 
     }
+
+    private void setupRecorder(){
+        try {
+            camera.setPreviewDisplay(surfaceHolder);
+            camera.stopPreview();
+            camera.unlock();
+//            camera.set
+
+            recorder = new MediaRecorder();
+            recorder.setCamera(camera);
+//            recorder.setVideoSize(1024,720);
+            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            recorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
+            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            recorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Camera.Size getBestPreviewSize(int width, int height, Camera.Parameters parameters) {
+        Camera.Size result = null;
+
+        for (Camera.Size size : parameters.getSupportedPreviewSizes()) {
+            System.out.print("Size: " + size.width + ", " + size.height);
+            if (size.width <= width && size.height <= height) {
+                if (result == null) {
+                    result = size;
+                } else {
+                    int resultArea = result.width * result.height;
+                    int newArea = size.width * size.height;
+
+                    if (newArea > resultArea) {
+                        result = size;
+                    }
+                }
+            }
+        }
+
+        return (result);
+    }
+
+    private void initPreview(int width, int height) {
+        if (camera != null && surfaceHolder.getSurface() != null) {
+            try {
+                camera.setPreviewDisplay(surfaceHolder);
+            } catch (Throwable t) {
+                Toast.makeText(mActivity, t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+
+            if (!cameraConfigured) {
+                Camera.Parameters parameters = camera.getParameters();
+                Camera.Size size = getBestPreviewSize(width, height, parameters);
+
+                if (size != null) {
+                    parameters.setPreviewSize(size.width, size.height);
+                    camera.setParameters(parameters);
+                    cameraConfigured = true;
+                }
+            }
+        }
+    }
+
+
 }
