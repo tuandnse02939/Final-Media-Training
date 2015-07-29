@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,14 +17,18 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import tuandn.com.mediatraining.Adapter.ListVideoAdapter;
 import tuandn.com.mediatraining.Database.DatabaseHandler;
@@ -38,6 +43,12 @@ public class VideoRecordFragment extends Fragment{
 
     public static final String RECORDING = "RECORDING";
     public static final String ON_PAUSING = "ON_PAUSING";
+
+    public static final String HD1080 = "HD 1080p";
+    public static final String HD720 = "HD 720p";
+    public static final String HQ480 = "HQ 480p";
+    public static final String P240 = "240p";
+
 
     private FloatingActionButton fab;
     public static final int     REQUEST_VIDEO_CAPTURE = 1;
@@ -63,6 +74,10 @@ public class VideoRecordFragment extends Fragment{
     private boolean             isFlashAvailable = true;
     private boolean             isFlashOn = false;
     private Camera.Parameters   parameters;
+    private Spinner             videoSpinner;
+    private CamcorderProfile    profile;
+    private int                 width = 0,height = 0;
+    private boolean             isCameraAvailable = true;
 
     private ListVideoRecordedFragment mListFragment = new ListVideoRecordedFragment();
 
@@ -79,6 +94,7 @@ public class VideoRecordFragment extends Fragment{
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+
         mActivity       = getActivity();
         mContext        = getActivity().getApplicationContext();
 
@@ -92,6 +108,9 @@ public class VideoRecordFragment extends Fragment{
         //Update UI Layout
         mainLayout.setVisibility(View.VISIBLE);
         secondLayout.setVisibility(View.GONE);
+
+        //Spinner
+        videoSpinner = (Spinner) getView().findViewById(R.id.spinner_video_size);
 
         mVideoView      = (VideoView)   getView().findViewById(R.id.video_view);
         mVideoView.setVisibility(View.VISIBLE);
@@ -250,40 +269,49 @@ public class VideoRecordFragment extends Fragment{
 
 
     private void useCameraAPI(){
-        try {
-            setupRecorder();
-            recorder.setOutputFile(getTemporaryFileName());
-            recorder.prepare();
-            recorder.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            setupCamera();
     }
 
     private void useCamera2API(){
 
     }
 
-    private void setupRecorder(){
+    private void setupCamera(){
         try {
             camera = Camera.open(cameraID);
             camera.setDisplayOrientation(90);
-            initPreview(1024, 720);
+            initPreview(1024, 768);
             camera.setPreviewDisplay(surfaceHolder);
             camera.stopPreview();
+            setVideoSizeMain();
             camera.unlock();
-            // If necessary, modify the returned Camera.Parameters object and call setParameters(Camera.Parameters).
-            recorder = new MediaRecorder();
-            recorder.setCamera(camera);
-//            recorder.setVideoSize(1024,720);
-            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            recorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
-            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-            recorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void setupRecorder(){
+        recorder = new MediaRecorder();
+        recorder.setCamera(camera);
+        recorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
+        recorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        //Check if user haven't choose Video Size
+        if(height == 0) {
+            profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+        }
+        width   = profile.videoFrameWidth;
+        height  = profile.videoFrameHeight;
+        recorder.setVideoSize(width, height);
+        recorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+        recorder.setOutputFile(getTemporaryFileName());
+        try {
+            recorder.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        recorder.start();
     }
 
     private Camera.Size getBestPreviewSize(int width, int height, Camera.Parameters parameters) {
@@ -331,5 +359,66 @@ public class VideoRecordFragment extends Fragment{
 
     private String getTemporaryFileName() {
         return Environment.getExternalStorageDirectory().getAbsolutePath() +File.separator+ "tmpvideo";
+    }
+
+    //setVideoSizeSpinner
+    private void setVideoSizeMain(){
+        ArrayList<String> spinnerArray = new ArrayList<String>();
+        List<Camera.Size> list = camera.getParameters().getSupportedPictureSizes();
+        for (Camera.Size size:list){
+            if(size.height == CamcorderProfile.get(CamcorderProfile.QUALITY_1080P).videoFrameHeight
+                    & size.width == CamcorderProfile.get(CamcorderProfile.QUALITY_1080P).videoFrameWidth){
+                spinnerArray.add(HD1080);
+            }
+            else if(size.height == CamcorderProfile.get(CamcorderProfile.QUALITY_720P).videoFrameHeight
+                        & size.width == CamcorderProfile.get(CamcorderProfile.QUALITY_720P).videoFrameWidth){
+                spinnerArray.add(HD720);
+                }
+            else if(size.height == CamcorderProfile.get(CamcorderProfile.QUALITY_480P).videoFrameHeight
+                    & size.width == CamcorderProfile.get(CamcorderProfile.QUALITY_480P).videoFrameWidth){
+                spinnerArray.add(HQ480);
+            }
+            else if(size.height == CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA).videoFrameHeight
+                    & size.width == CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA).videoFrameWidth){
+                spinnerArray.add(P240);
+            }
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(), R.layout.spinner_item, spinnerArray);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        videoSpinner.setAdapter(adapter);
+
+        videoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    profile = CamcorderProfile.get(CamcorderProfile.QUALITY_1080P);
+                } else if (position == 1) {
+                    profile = CamcorderProfile.get(CamcorderProfile.QUALITY_720P);
+                } else if (position == 2) {
+                    profile = CamcorderProfile.get(CamcorderProfile.QUALITY_480P);
+                } else if (position == 3) {
+                    profile = CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA);
+                }
+//                if(!isCameraAvailable){
+//                    recorder.stop();
+//                    recorder.reset();
+//                    recorder.release();
+//                }
+//                if (inPreview) {
+//                    camera.stopPreview();
+//                    recorder.stop();
+//                    recorder.reset();
+//                    recorder.release();
+//                    File f = new File(targetFilename);
+//                    f.delete();
+//                }
+//                camera.release();
+//                useCameraAPI();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
     }
 }
