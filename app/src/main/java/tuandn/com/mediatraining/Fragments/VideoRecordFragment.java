@@ -44,10 +44,10 @@ public class VideoRecordFragment extends Fragment{
     public static final String RECORDING = "RECORDING";
     public static final String ON_PAUSING = "ON_PAUSING";
 
-    public static final String HD1080 = "HD 1080p";
-    public static final String HD720 = "HD 720p";
-    public static final String HQ480 = "HQ 480p";
-    public static final String P240 = "240p";
+    public static final String HD1080 = "HD1080p";
+    public static final String HD720 = "HD720p";
+    public static final String HQ480 = "HQ480p";
+    public static final String QVGA = "240p";
 
 
     private FloatingActionButton fab;
@@ -79,6 +79,8 @@ public class VideoRecordFragment extends Fragment{
     private int                 width = 0,height = 0;
     private boolean             isCameraAvailable = true;
     private boolean             isSetCamera = false;
+    private boolean             isFirstTimeCallRecord = true;
+    private boolean             isChangingFlash = false;
 
     private ListVideoRecordedFragment mListFragment = new ListVideoRecordedFragment();
 
@@ -149,6 +151,10 @@ public class VideoRecordFragment extends Fragment{
                 } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     useCameraAPI();
                 }
+                if(!isFirstTimeCallRecord){
+                    setupRecorder();
+                }
+                isFirstTimeCallRecord = false;
             }
         });
 
@@ -218,21 +224,20 @@ public class VideoRecordFragment extends Fragment{
                     flashControl.setBackgroundResource(R.drawable.flash_off_icon);
                 }
                 else {
+                    recorder.stop();
+                    recorder.reset();
+                    recorder.release();
+
                     camera.stopPreview();
-                    if(isFlashOn) {
-                        flashControl.setBackgroundResource(R.drawable.flash_off_icon);
-                        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
-                        camera.setParameters(parameters);
-                        camera.startPreview();
-                        isFlashOn = false;
-                    }
-                    else{
-                        flashControl.setBackgroundResource(R.drawable.flash_on);
-                        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-                        camera.setParameters(parameters);
-                        camera.startPreview();
-                        isFlashOn = true;
-                    }
+                    camera.release();
+
+                    Mp4ParserWrapper.append(targetFilename, getTemporaryFileName());
+                    File f = new File(getTemporaryFileName());
+                    f.delete();
+
+                    isChangingFlash = true;
+                    setupCamera();
+                    setupRecorder();
                 }
             }
         });
@@ -283,9 +288,27 @@ public class VideoRecordFragment extends Fragment{
             camera.setDisplayOrientation(90);
             initPreview(1024, 768);
             camera.setPreviewDisplay(surfaceHolder);
-            camera.stopPreview();
             if (!isSetCamera){
                 setVideoSizeMain();
+            }
+            if (isChangingFlash){
+                if(isFlashOn) {
+                    flashControl.setBackgroundResource(R.drawable.flash_off_icon);
+                    parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                    camera.setParameters(parameters);
+                    isFlashOn = false;
+                }
+                else{
+                    flashControl.setBackgroundResource(R.drawable.flash_on);
+                    parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                    camera.setParameters(parameters);
+                    isFlashOn = true;
+                }
+                isChangingFlash = false;
+            } else {
+                flashControl.setBackgroundResource(R.drawable.flash_off_icon);
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                camera.setParameters(parameters);
             }
             camera.unlock();
         } catch (IOException e) {
@@ -374,7 +397,7 @@ public class VideoRecordFragment extends Fragment{
                 spinnerArray.add(HD1080);
             }
             else if(size.height == CamcorderProfile.get(CamcorderProfile.QUALITY_720P).videoFrameHeight
-                        & size.width == CamcorderProfile.get(CamcorderProfile.QUALITY_720P).videoFrameWidth){
+                    & size.width == CamcorderProfile.get(CamcorderProfile.QUALITY_720P).videoFrameWidth){
                 spinnerArray.add(HD720);
                 }
             else if(size.height == CamcorderProfile.get(CamcorderProfile.QUALITY_480P).videoFrameHeight
@@ -383,23 +406,24 @@ public class VideoRecordFragment extends Fragment{
             }
             else if(size.height == CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA).videoFrameHeight
                     & size.width == CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA).videoFrameWidth){
-                spinnerArray.add(P240);
+                spinnerArray.add(QVGA);
             }
+            System.out.println("XXYY: " + size.height+ " " + size.width);
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(), R.layout.spinner_item, spinnerArray);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         videoSpinner.setAdapter(adapter);
 
         videoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
+                if (parent.getItemAtPosition(position).toString().equals(HD1080)) {
                     profile = CamcorderProfile.get(CamcorderProfile.QUALITY_1080P);
-                } else if (position == 1) {
+                } else if (parent.getItemAtPosition(position).toString().equals(HD720)) {
                     profile = CamcorderProfile.get(CamcorderProfile.QUALITY_720P);
-                } else if (position == 2) {
+                } else if (parent.getItemAtPosition(position).toString().equals(HQ480)) {
                     profile = CamcorderProfile.get(CamcorderProfile.QUALITY_480P);
-                } else if (position == 3) {
+                } else if (parent.getItemAtPosition(position).toString().equals(QVGA)) {
                     profile = CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA);
                 }
                 if(!isCameraAvailable){
