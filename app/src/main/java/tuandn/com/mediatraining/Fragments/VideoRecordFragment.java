@@ -78,6 +78,7 @@ public class VideoRecordFragment extends Fragment{
     private CamcorderProfile    profile;
     private int                 width = 0,height = 0;
     private boolean             isCameraAvailable = true;
+    private boolean             isSetCamera = false;
 
     private ListVideoRecordedFragment mListFragment = new ListVideoRecordedFragment();
 
@@ -283,7 +284,9 @@ public class VideoRecordFragment extends Fragment{
             initPreview(1024, 768);
             camera.setPreviewDisplay(surfaceHolder);
             camera.stopPreview();
-            setVideoSizeMain();
+            if (!isSetCamera){
+                setVideoSizeMain();
+            }
             camera.unlock();
         } catch (IOException e) {
             e.printStackTrace();
@@ -308,10 +311,10 @@ public class VideoRecordFragment extends Fragment{
         recorder.setOutputFile(getTemporaryFileName());
         try {
             recorder.prepare();
+            recorder.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        recorder.start();
     }
 
     private Camera.Size getBestPreviewSize(int width, int height, Camera.Parameters parameters) {
@@ -399,21 +402,21 @@ public class VideoRecordFragment extends Fragment{
                 } else if (position == 3) {
                     profile = CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA);
                 }
-//                if(!isCameraAvailable){
-//                    recorder.stop();
-//                    recorder.reset();
-//                    recorder.release();
-//                }
-//                if (inPreview) {
-//                    camera.stopPreview();
-//                    recorder.stop();
-//                    recorder.reset();
-//                    recorder.release();
-//                    File f = new File(targetFilename);
-//                    f.delete();
-//                }
-//                camera.release();
-//                useCameraAPI();
+                if(!isCameraAvailable){
+                    recorder.stop();
+                    recorder.reset();
+                    recorder.release();
+                }
+                if(isSetCamera) {
+                    camera.stopPreview();
+                    File f = new File(targetFilename);
+                    f.delete();
+                    camera.release();
+                    setupCamera();
+                }
+                isSetCamera = true;
+                isCameraAvailable = false;
+                setupRecorder();
             }
 
             @Override
