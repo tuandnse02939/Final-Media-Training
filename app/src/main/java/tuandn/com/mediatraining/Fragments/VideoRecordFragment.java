@@ -1,18 +1,29 @@
 package tuandn.com.mediatraining.Fragments;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.HandlerThread;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -29,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 import tuandn.com.mediatraining.Adapter.ListVideoAdapter;
 import tuandn.com.mediatraining.Database.DatabaseHandler;
@@ -83,6 +95,20 @@ public class VideoRecordFragment extends Fragment{
     private boolean             isChangingFlash = false;
 
     private ListVideoRecordedFragment mListFragment = new ListVideoRecordedFragment();
+
+    // Camera2
+    /**
+     * A refernce to the opened {@link android.hardware.camera2.CameraDevice}.
+     */
+    private CameraDevice mCameraDevice;
+    /**
+     * A {@link Semaphore} to prevent the app from exiting before closing the camera.
+     */
+    private Semaphore mCameraOpenCloseLock = new Semaphore(1);
+    /**
+     * A reference to the current {@link android.hardware.camera2.CameraCaptureSession} for preview.
+     */
+    private CameraCaptureSession mPreviewSession;
 
 
 
@@ -149,7 +175,7 @@ public class VideoRecordFragment extends Fragment{
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                     useCameraAPI();
                 } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    useCameraAPI();
+                    useCamera2API();
                 }
                 if(!isFirstTimeCallRecord){
                     setupRecorder();
@@ -447,5 +473,137 @@ public class VideoRecordFragment extends Fragment{
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
+    }
+
+    //------------Camera2-----------------------
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void setupCamera2(){
+        CameraManager cameraManager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
+        try {
+            String cameraIdStr = cameraManager.getCameraIdList()[0];
+            CameraCharacteristics cc = cameraManager.getCameraCharacteristics(cameraIdStr);
+            StreamConfigurationMap streamConfigs = cc.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+            cameraManager.openCamera(cameraIdStr, new CameraDevice.StateCallback() {
+                @Override
+                public void onOpened(CameraDevice camera) {
+
+                }
+
+                @Override
+                public void onDisconnected(CameraDevice camera) {
+
+                }
+
+                @Override
+                public void onError(CameraDevice camera, int error) {
+
+                }
+            },null);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
+
+        @Override
+        public void onOpened(CameraDevice cameraDevice) {
+            mCameraDevice = cameraDevice;
+            startPreview();
+            mCameraOpenCloseLock.release();
+        }
+
+        @Override
+        public void onDisconnected(CameraDevice cameraDevice) {
+            mCameraOpenCloseLock.release();
+            cameraDevice.close();
+            mCameraDevice = null;
+        }
+
+        @Override
+        public void onError(CameraDevice cameraDevice, int error) {
+            mCameraOpenCloseLock.release();
+            cameraDevice.close();
+            mCameraDevice = null;
+            Activity activity = getActivity();
+            if (null != activity) {
+                activity.finish();
+            }
+        }
+
+    };
+
+    private void startPreview() {
+//        if (null == mCameraDevice || !surfaceView. || null == mPreviewSize) {
+//            return;
+//        }
+        try {
+            setUpMediaRecorder2();
+            initPreview(1024, 768);
+            CaptureRequest.Builder mPreviewBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
+            List<Surface> surfaces = new ArrayList<Surface>();
+
+            Surface previewSurface = surfaceHolder.getSurface()
+            surfaces.add(previewSurface);
+            mPreviewBuilder.addTarget(previewSurface);
+
+            mCameraDevice.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
+
+                @Override
+                public void onConfigured(CameraCaptureSession cameraCaptureSession) {
+                    mPreviewSession = cameraCaptureSession;
+                    updatePreview();
+                }
+
+                @Override
+                public void onConfigureFailed(CameraCaptureSession cameraCaptureSession) {
+                    Activity activity = getActivity();
+                    if (null != activity) {
+                        Toast.makeText(activity, "Failed", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }, mBackgroundHandler);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setUpMediaRecorder2() throws IOException {
+        final Activity activity = getActivity();
+        if (null == activity) {
+            return;
+        }
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        recorder.setOutputFile(getTemporaryFileName());
+        recorder.setVideoEncodingBitRate(10000000);
+        recorder.setVideoFrameRate(30);
+        recorder.setVideoSize(width, height);
+        recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+        int orientation = ORIENTATIONS.get(rotation);
+        recorder.setOrientationHint(orientation);
+        recorder.prepare();
+    }
+
+    /**
+     * Update the camera preview. {@link #startPreview()} needs to be called in advance.
+     */
+    private void updatePreview() {
+        if (null == mCameraDevice) {
+            return;
+        }
+        try {
+            setUpCaptureRequestBuilder(mPreviewBuilder);
+            HandlerThread thread = new HandlerThread("CameraPreview");
+            thread.start();
+            mPreviewSession.setRepeatingRequest(mPreviewBuilder.build(), null, mBackgroundHandler);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
     }
 }
