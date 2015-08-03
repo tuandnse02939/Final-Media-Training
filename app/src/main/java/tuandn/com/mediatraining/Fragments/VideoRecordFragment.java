@@ -110,6 +110,7 @@ public class VideoRecordFragment extends Fragment{
     private boolean             isSetCamera = false;
     private boolean             isFirstTimeCallRecord = true;
     private boolean             isChangingFlash = false;
+    private boolean             isCamera2 = false;
 
     private ListVideoRecordedFragment mListFragment = new ListVideoRecordedFragment();
 
@@ -148,6 +149,7 @@ public class VideoRecordFragment extends Fragment{
      * The {@link android.util.Size} of video recording.
      */
     private Size mVideoSize;
+    private CameraManager cameraManager;
 
 
     @Override
@@ -189,6 +191,7 @@ public class VideoRecordFragment extends Fragment{
         flashControl = (Button)      getView().findViewById(R.id.flash);
         surfaceView     = (SurfaceView) getView().findViewById(R.id.surface);
         surfaceHolder   = surfaceView.getHolder();
+        cameraManager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
 
         reloadList();
 
@@ -215,6 +218,7 @@ public class VideoRecordFragment extends Fragment{
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                     useCameraAPI();
                 } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    isCamera2 = true;
                     useCamera2API();
                 }
                 if(!isFirstTimeCallRecord){
@@ -228,14 +232,18 @@ public class VideoRecordFragment extends Fragment{
             @Override
             public void onClick(View v) {
                 if(status != ON_PAUSING) {
-                    recorder.stop();
-                    recorder.reset();
-                    recorder.release();
+                    // Stop Recorder
+                    stopRecorder();
+                    // Delete tmp file
                     Mp4ParserWrapper.append(targetFilename, getTemporaryFileName());
                     File f = new File(getTemporaryFileName());
                     f.delete();
-                    camera.stopPreview();
-                    camera.release();
+                    if(isCamera2){
+                        closeCamera();
+                    } else {
+                        camera.stopPreview();
+                        camera.release();
+                    }
                 }
                 mVideoView.setVisibility(View.VISIBLE);
                 if (handler.addMediaFile(filenameToSaveDB, handler.VIDEO_TYPE)) {
@@ -271,11 +279,12 @@ public class VideoRecordFragment extends Fragment{
             public void onClick(View v) {
                 if (inPreview) {
                     camera.stopPreview();
-                    recorder.stop();
-                    recorder.reset();
-                    recorder.release();
+                    stopRecorder();
                     File f = new File(targetFilename);
-                    f.delete();
+                    boolean checkDeletedFile = f.delete();
+                    if(!checkDeletedFile) {
+                        Toast.makeText(getActivity().getApplicationContext(),"FIle tmp was not be deleted",Toast.LENGTH_LONG).show();
+                    }
                 }
                 camera.release();
                 cameraID = (cameraID + 1) % 2;
@@ -290,9 +299,7 @@ public class VideoRecordFragment extends Fragment{
                     flashControl.setBackgroundResource(R.drawable.flash_off_icon);
                 }
                 else {
-                    recorder.stop();
-                    recorder.reset();
-                    recorder.release();
+                    stopRecorder();
 
                     camera.stopPreview();
                     camera.release();
@@ -310,12 +317,13 @@ public class VideoRecordFragment extends Fragment{
     }
 
     private void pause() {
-        recorder.stop();
-        recorder.reset();
-        recorder.release();
-
-        camera.stopPreview();
-        camera.release();
+        stopRecorder();
+        if(isCamera2){
+            closeCamera();
+        } else {
+            camera.stopPreview();
+            camera.release();
+        }
         Toast.makeText(mContext, "Pause", Toast.LENGTH_LONG).show();
 
         Mp4ParserWrapper.append(targetFilename, getTemporaryFileName());
@@ -350,6 +358,12 @@ public class VideoRecordFragment extends Fragment{
         surfaceView.setVisibility(View.GONE);
         mTextureView.setVisibility(View.VISIBLE);
         setupCamera2();
+    }
+
+    private void stopRecorder(){
+        recorder.stop();
+        recorder.reset();
+        recorder.release();
     }
 
     private void setupCamera(){
@@ -498,9 +512,7 @@ public class VideoRecordFragment extends Fragment{
                     profile = CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA);
                 }
                 if(!isCameraAvailable){
-                    recorder.stop();
-                    recorder.reset();
-                    recorder.release();
+                    stopRecorder();
                 }
                 if(isSetCamera) {
                     camera.stopPreview();
@@ -524,7 +536,6 @@ public class VideoRecordFragment extends Fragment{
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void setupCamera2(){
-        CameraManager cameraManager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
         try {
             String cameraIdStr = cameraManager.getCameraIdList()[0];
             CameraCharacteristics cc = cameraManager.getCameraCharacteristics(cameraIdStr);
@@ -647,6 +658,11 @@ public class VideoRecordFragment extends Fragment{
                     }
                 }
             }, null);
+            if(recorder!=null) {
+                recorder.start();
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(),"Recorder not available", Toast.LENGTH_LONG).show();
+            }
         } catch (CameraAccessException e) {
             e.printStackTrace();
         } catch (IOException e) {
