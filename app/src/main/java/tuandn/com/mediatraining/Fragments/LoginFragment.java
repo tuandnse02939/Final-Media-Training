@@ -273,7 +273,7 @@ public class LoginFragment extends Fragment implements
                     @Override
                     protected String doInBackground(Void... params) {
                         String token = null;
-                        String full_scope = "oauth2:server:client_id:" + CLIENT_ID + " " + YouTubeScopes.YOUTUBE + " " + YouTubeScopes.YOUTUBE_READONLY;
+                        String full_scope = "oauth2:server:client_id:" + CLIENT_ID +  ":api_scope:" + YouTubeScopes.YOUTUBE + " " + YouTubeScopes.YOUTUBE_READONLY;
 
                         try {
                             token = GoogleAuthUtil.getToken(
