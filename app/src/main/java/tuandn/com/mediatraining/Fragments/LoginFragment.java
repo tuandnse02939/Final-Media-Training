@@ -64,7 +64,7 @@ public class LoginFragment extends Fragment implements
     private static final String PREF_ACCOUNT_NAME = "accountName";
     public static final String[] SCOPES = {Scopes.PROFILE, YouTubeScopes.YOUTUBE, YouTubeScopes.YOUTUBE_FORCE_SSL, YouTubeScopes.YOUTUBEPARTNER, YouTubeScopes.YOUTUBE_READONLY};
     public static final String API_KEY  = "AIzaSyD0MwUad7hVnPWiuX5HiOWCEnf2VVGd8gY";
-    private static final int REQUEST_AUTHORIZATION = 1;
+    private static final int REQUEST_AUTHORIZATION = 2;
     final HttpTransport transport = AndroidHttp.newCompatibleTransport();
     final JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
     private static final String CLIENT_ID = "310837961882-d59jk6ajrkkor1m742rp3gsm6bse871c.apps.googleusercontent.com";
@@ -86,6 +86,7 @@ public class LoginFragment extends Fragment implements
 
     private YouTube mYouTube;
     private String token;
+    private GoogleCredential credential;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -166,8 +167,9 @@ public class LoginFragment extends Fragment implements
 
             if (!mGoogleApiClient.isConnecting()) {
                 mGoogleApiClient.connect();
-
             }
+        } else if(requestCode == REQUEST_AUTHORIZATION) {
+            setupYoutube();
         }
     }
 
@@ -262,18 +264,13 @@ public class LoginFragment extends Fragment implements
                 editor.commit();
 
                 //testttttttttttt
-//                try {
-//                token = GoogleAuthUtil.getToken(mContext,
-//                            email, String.valueOf(Arrays.asList(SCOPES)));
-//                }  catch (UserRecoverableAuthIOException e) {
-//                    mActivity.startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
-//                }
 
                 AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
                     @Override
                     protected String doInBackground(Void... params) {
-                        String token = null;
-                        String full_scope = "oauth2:server:client_id:" + CLIENT_ID +  ":api_scope:" + YouTubeScopes.YOUTUBE + " " + YouTubeScopes.YOUTUBE_READONLY;
+                        token = null;
+                        String full_scope = "oauth2:server:client_id:" + CLIENT_ID +  ":api_scope:" + YouTubeScopes.YOUTUBE + " " + YouTubeScopes.YOUTUBE_READONLY
+                                + " " + YouTubeScopes.YOUTUBE_FORCE_SSL + " " + YouTubeScopes.YOUTUBEPARTNER + " " + YouTubeScopes.YOUTUBEPARTNER_CHANNEL_AUDIT;
 
                         try {
                             token = GoogleAuthUtil.getToken(
@@ -289,64 +286,21 @@ public class LoginFragment extends Fragment implements
                             Intent recover = e.getIntent();
                             mActivity.startActivityForResult(recover, REQUEST_AUTHORIZATION);
                         } catch (GoogleAuthException authEx) {
-                            // The call is not ever expected to succeed
-                            // assuming you have already verified that
-                            // Google Play services is installed.
                             Log.e(TAG, authEx.toString());
                         }
-
+                        if(token != null){
+                            setupYoutube();
+                        }
                         return token;
                     }
 
                     @Override
-                    protected void onPostExecute(String token) {
+                    protected void onPostExecute(final String mToken) {
                         Log.i(TAG, "Access token retrieved:" + token);
                     }
 
                 };
                 task.execute();
-
-
-//                GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(getActivity().getApplicationContext(), Arrays.asList(SCOPES))
-//                        .setBackOff(new ExponentialBackOff())
-//                        .setSelectedAccountName(email);
-
-                GoogleCredential credential = new GoogleCredential.Builder()
-                        .setTransport(transport).setJsonFactory(jsonFactory)
-                        .setClientSecrets(CLIENT_ID, CLIENT_SECRET).setRequestInitializer((new HttpRequestInitializer(){
-                            @Override
-                            public void initialize(HttpRequest request)
-                                    throws IOException {
-                                request.getHeaders().put("Authorization", "Bearer " + token);
-                            }
-                        })).build();
-
-                mYouTube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), credential)
-                        .setApplicationName(getActivity().getApplicationContext().getString(R.string.app_name)).build();
-
-                new AsyncTask<Void, Void, Void>() {
-                    @Override
-                    protected Void doInBackground(Void... voids) {
-                        YouTube.Subscriptions.List getListRequest;
-                        try {
-                            getListRequest = mYouTube.subscriptions().list("snippet");
-                            getListRequest.setMine(true);
-                            getListRequest.setKey(API_KEY);
-                            SubscriptionListResponse listResponse = getListRequest.execute();
-                            List<Subscription> subscriptions = listResponse.getItems();
-                            if(subscriptions == null){
-                                Toast.makeText(getActivity().getApplicationContext(),"Nulllllll",Toast.LENGTH_LONG).show();
-                            }
-                            else{
-                                Toast.makeText(getActivity().getApplicationContext(),"Size: " + subscriptions.size(),Toast.LENGTH_LONG).show();
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        return null;
-                    }
-                }.execute((Void) null);
-
 
 
                 // end testtttttttttt
@@ -361,6 +315,44 @@ public class LoginFragment extends Fragment implements
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void setupYoutube(){
+        credential = new GoogleCredential.Builder()
+                .setTransport(transport).setJsonFactory(jsonFactory)
+                .setClientSecrets(CLIENT_ID, CLIENT_SECRET).setRequestInitializer((new HttpRequestInitializer(){
+                    @Override
+                    public void initialize(HttpRequest request)
+                            throws IOException {
+                        request.getHeaders().put("Authorization", "OAuth " + token);
+                    }
+                })).build();
+
+        mYouTube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), credential)
+                .setApplicationName(getActivity().getApplicationContext().getString(R.string.app_name)).build();
+
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                YouTube.Subscriptions.List getListRequest;
+                try {
+                    getListRequest = mYouTube.subscriptions().list("snippet");
+                    getListRequest.setMine(true);
+                    getListRequest.setKey(API_KEY);
+                    SubscriptionListResponse listResponse = getListRequest.execute();
+                    List<Subscription> subscriptions = listResponse.getItems();
+                    if(subscriptions == null){
+                        Toast.makeText(getActivity().getApplicationContext(),"Nulllllll",Toast.LENGTH_LONG).show();
+                    }
+                    else{
+                        Toast.makeText(getActivity().getApplicationContext(),"Size: " + subscriptions.size(),Toast.LENGTH_LONG).show();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }.execute((Void) null);
     }
 
     /**
