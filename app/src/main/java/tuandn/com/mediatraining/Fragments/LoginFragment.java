@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.Scopes;
@@ -29,11 +30,10 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.model.people.Person;
-import com.google.api.client.auth.oauth.OAuthGetAccessToken;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
@@ -41,7 +41,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.YouTubeScopes;
 import com.google.api.services.youtube.model.Subscription;
@@ -49,10 +48,15 @@ import com.google.api.services.youtube.model.SubscriptionListResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import tuandn.com.mediatraining.Activity.MainActivity;
 import tuandn.com.mediatraining.R;
+
+import static com.google.api.services.youtube.YouTubeScopes.YOUTUBEPARTNER;
+import static com.google.api.services.youtube.YouTubeScopes.YOUTUBE_UPLOAD;
 
 
 public class LoginFragment extends Fragment implements
@@ -62,13 +66,15 @@ public class LoginFragment extends Fragment implements
 
     private static final String TAG = "MainActivity";
     private static final String PREF_ACCOUNT_NAME = "accountName";
-    public static final String[] SCOPES = {Scopes.PROFILE, YouTubeScopes.YOUTUBE, YouTubeScopes.YOUTUBE_FORCE_SSL, YouTubeScopes.YOUTUBEPARTNER, YouTubeScopes.YOUTUBE_READONLY};
+    public static final String[] SCOPES = {Scopes.PROFILE, YouTubeScopes.YOUTUBE, YouTubeScopes.YOUTUBE_FORCE_SSL, YOUTUBEPARTNER, YouTubeScopes.YOUTUBE_READONLY};
     public static final String API_KEY  = "AIzaSyD0MwUad7hVnPWiuX5HiOWCEnf2VVGd8gY";
-    private static final int REQUEST_AUTHORIZATION = 2;
+    public static final int REQUEST_AUTHORIZATION = 2;
     final HttpTransport transport = AndroidHttp.newCompatibleTransport();
     final JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
-    private static final String CLIENT_ID = "310837961882-d59jk6ajrkkor1m742rp3gsm6bse871c.apps.googleusercontent.com";
-    private static final String CLIENT_SECRET = "xnbT5oEVrnMV9us2Jp3IR2x7";
+    private static final String CLIENT_ID_WEB       = "310837961882-d59jk6ajrkkor1m742rp3gsm6bse871c.apps.googleusercontent.com";
+    private static final String CLIENT_SECRET       = "xnbT5oEVrnMV9us2Jp3IR2x7";
+    private static final String CLIENT_ID_ANDROID   = "310837961882-25h7s31g4089b0jb8eo1sdf1h6pevsch.apps.googleusercontent.com";
+
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -269,8 +275,8 @@ public class LoginFragment extends Fragment implements
                     @Override
                     protected String doInBackground(Void... params) {
                         token = null;
-                        String full_scope = "oauth2:server:client_id:" + CLIENT_ID +  ":api_scope:" + YouTubeScopes.YOUTUBE + " " + YouTubeScopes.YOUTUBE_READONLY
-                                + " " + YouTubeScopes.YOUTUBE_FORCE_SSL + " " + YouTubeScopes.YOUTUBEPARTNER + " " + YouTubeScopes.YOUTUBEPARTNER_CHANNEL_AUDIT;
+                        String full_scope = "oauth2:server:client_id:" + CLIENT_ID_WEB +  ":api_scope:" + YouTubeScopes.YOUTUBE + " " + YouTubeScopes.YOUTUBE_READONLY
+                                + " " + YouTubeScopes.YOUTUBE_FORCE_SSL + " " + YOUTUBEPARTNER;
 
                         try {
                             token = GoogleAuthUtil.getToken(
@@ -318,17 +324,12 @@ public class LoginFragment extends Fragment implements
     }
 
     private void setupYoutube(){
-        credential = new GoogleCredential.Builder()
-                .setTransport(transport).setJsonFactory(jsonFactory)
-                .setClientSecrets(CLIENT_ID, CLIENT_SECRET).setRequestInitializer((new HttpRequestInitializer(){
-                    @Override
-                    public void initialize(HttpRequest request)
-                            throws IOException {
-                        request.getHeaders().put("Authorization", "OAuth " + token);
-                    }
-                })).build();
 
-        mYouTube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), credential)
+        GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(mContext, Arrays.asList(SCOPES));
+        SharedPreferences settings = mActivity.getPreferences(Context.MODE_PRIVATE);
+        credential.setSelectedAccountName("kingdragon102@gmail.com");
+        // YouTube client
+        mYouTube = new YouTube.Builder(transport, jsonFactory, credential)
                 .setApplicationName(getActivity().getApplicationContext().getString(R.string.app_name)).build();
 
         new AsyncTask<Void, Void, Void>() {
@@ -345,7 +346,7 @@ public class LoginFragment extends Fragment implements
                         Toast.makeText(getActivity().getApplicationContext(),"Nulllllll",Toast.LENGTH_LONG).show();
                     }
                     else{
-                        Toast.makeText(getActivity().getApplicationContext(),"Size: " + subscriptions.size(),Toast.LENGTH_LONG).show();
+                        System.out.print("XXYY:" + subscriptions.size());
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
