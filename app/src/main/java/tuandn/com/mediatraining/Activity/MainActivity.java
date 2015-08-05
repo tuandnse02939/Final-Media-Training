@@ -28,6 +28,7 @@ import java.io.InputStream;
 import tuandn.com.mediatraining.Fragments.AudioRecordFragment;
 import tuandn.com.mediatraining.Fragments.EmptyFragment;
 import tuandn.com.mediatraining.Fragments.ListAudioFragment;
+import tuandn.com.mediatraining.Fragments.ListVideoYoutubeFragment;
 import tuandn.com.mediatraining.Fragments.LoginFragment;
 import tuandn.com.mediatraining.Fragments.VideoRecordFragment;
 import tuandn.com.mediatraining.Fragments.YoutubeFragment;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private YoutubeFragment youtubeFragment;
     private AudioRecordFragment audioRecordFragment;
     private VideoRecordFragment videoRecordFragment;
+    private ListVideoYoutubeFragment listVideoYoutubeFragment;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -56,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mLoginFragment = new tuandn.com.mediatraining.Fragments.LoginFragment();
+        mLoginFragment = new LoginFragment();
         FragmentTransaction ft2 = getSupportFragmentManager().beginTransaction();
 
 
@@ -82,10 +84,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         audioRecordFragment = new AudioRecordFragment();
         //VideoRecordFragment
         videoRecordFragment = new VideoRecordFragment();
-        ft2.replace(R.id.fragment_content, videoRecordFragment).commit();
-
-//        getSupportFragmentManager().beginTransaction().add(R.id.list_audio, new ListAudioFragment(), "tag").commit();
-
+        //List Youtube Video
+        listVideoYoutubeFragment = new ListVideoYoutubeFragment();
+        // Set Main Fragment
+        ft2.replace(R.id.fragment_content, mLoginFragment).commit();
     }
 
     @Override
@@ -148,6 +150,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mLoginFragment.onActivityResult(requestCode, resultCode, data);
         } else if(requestCode == VideoRecordFragment.REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK){
             videoRecordFragment.onActivityResult(requestCode, resultCode, data);
+        } else if (requestCode== YoutubeFragment.REQUEST_AUTHORIZATION){
+            youtubeFragment.onActivityResult(requestCode, resultCode, data);
         }
         super.onActivityResult(requestCode, resultCode, data);
     }

@@ -77,38 +77,38 @@ public class ListVideoYoutubeFragment extends Fragment {
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        channels = new ArrayList<YouTubeChannel>();
-
-        SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
-        credential = GoogleAccountCredential.usingOAuth2(getActivity().getApplicationContext(),Arrays.asList(SCOPES))
-                .setBackOff(new ExponentialBackOff())
-                .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
-        mYouTube = new YouTube.Builder(new NetHttpTransport(),
-                new JacksonFactory(), credential)
-                .setApplicationName(getActivity().getApplicationContext().getString(R.string.app_name))
-                .build();
-
-        new AsyncTask<Void, Void, Void>() {
-                    @Override
-                    protected Void doInBackground(Void... voids) {
-                        YouTube.Subscriptions.List getListRequest;
-                        try {
-                            getListRequest = mYouTube.subscriptions().list("snippet");
-                            getListRequest.setMine(true);
-                            getListRequest.setKey(API_KEY);
-                            SubscriptionListResponse listResponse = getListRequest.execute();
-                            List<Subscription> subscriptions = listResponse.getItems();
-                            if(subscriptions == null){
-                                Toast.makeText(getActivity().getApplicationContext(),"Nulllllll",Toast.LENGTH_LONG).show();
-                            }
-                            else{
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        return null;
-                }
-        }.execute((Void) null);
+//        channels = new ArrayList<YouTubeChannel>();
+//
+//        SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
+//        credential = GoogleAccountCredential.usingOAuth2(getActivity().getApplicationContext(),Arrays.asList(SCOPES))
+//                .setBackOff(new ExponentialBackOff())
+//                .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
+//        mYouTube = new YouTube.Builder(new NetHttpTransport(),
+//                new JacksonFactory(), credential)
+//                .setApplicationName(getActivity().getApplicationContext().getString(R.string.app_name))
+//                .build();
+//
+//        new AsyncTask<Void, Void, Void>() {
+//                    @Override
+//                    protected Void doInBackground(Void... voids) {
+//                        YouTube.Subscriptions.List getListRequest;
+//                        try {
+//                            getListRequest = mYouTube.subscriptions().list("snippet");
+//                            getListRequest.setMine(true);
+//                            getListRequest.setKey(API_KEY);
+//                            SubscriptionListResponse listResponse = getListRequest.execute();
+//                            List<Subscription> subscriptions = listResponse.getItems();
+//                            if(subscriptions == null){
+//                                Toast.makeText(getActivity().getApplicationContext(),"Nulllllll",Toast.LENGTH_LONG).show();
+//                            }
+//                            else{
+//                            }
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                        return null;
+//                }
+//        }.execute((Void) null);
 
         super.onActivityCreated(savedInstanceState);
     }

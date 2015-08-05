@@ -57,7 +57,7 @@ public class YoutubeFragment extends Fragment{
     private GoogleAccountCredential credential;
     private Context mContext;
     private Activity mActivity;
-    private String channelTitles[] = new String[1000];
+    private String channelTitles[];
     private String email;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -144,6 +144,7 @@ public class YoutubeFragment extends Fragment{
                         Toast.makeText(getActivity().getApplicationContext(), "Nulllllll", Toast.LENGTH_LONG).show();
                     }
                     else{
+                        channelTitles = new String[subscriptions.size()];
                         for(int i=0; i < subscriptions.size(); i++){
                             String title = subscriptions.get(i).getSnippet().getTitle();
                             channelTitles[i] = title;

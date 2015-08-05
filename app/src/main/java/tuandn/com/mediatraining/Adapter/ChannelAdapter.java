@@ -11,17 +11,18 @@ import tuandn.com.mediatraining.Fragments.ListVideoYoutubeFragment;
  */
 public class ChannelAdapter extends FragmentPagerAdapter {
     final int PAGE_COUNT = 3;
-    private String tabTitles[] = new String[] { "Tab1", "Tab2", "Tab3" };
+    private String tabTitles[];
     private Context context;
 
-    public ChannelAdapter(FragmentManager fm, Context context) {
+    public ChannelAdapter(FragmentManager fm, Context context, String[] channel) {
         super(fm);
         this.context = context;
+        this.tabTitles = channel;
     }
 
     @Override
     public int getCount() {
-        return PAGE_COUNT;
+        return tabTitles.length;
     }
 
     @Override
