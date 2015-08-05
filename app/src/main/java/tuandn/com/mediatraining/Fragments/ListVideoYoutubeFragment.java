@@ -83,22 +83,6 @@ public class ListVideoYoutubeFragment extends Fragment {
         credential = GoogleAccountCredential.usingOAuth2(getActivity().getApplicationContext(),Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff())
                 .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
-//        String mChosenAccountName;
-//        if (savedInstanceState != null) {
-//            mChosenAccountName = savedInstanceState.getString(PREF_ACCOUNT_NAME);
-//        } else {
-//            SharedPreferences sp = PreferenceManager
-//                    .getDefaultSharedPreferences(getActivity());
-//            mChosenAccountName = sp.getString(PREF_ACCOUNT_NAME, GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
-//        }
-//        mYouTube = new YouTube.Builder(transport,jsonFactory,credential)
-//                .setApplicationName("YouTube API Media Training")
-//                .build();
-//        mYouTube = new YouTube.Builder(new NetHttpTransport(),
-//                new JacksonFactory(), new HttpRequestInitializer() {
-//            @Override
-//            public void initialize(HttpRequest hr) throws IOException {}
-//        }).setApplicationName(getActivity().getApplicationContext().getString(R.string.app_name)).build();
         mYouTube = new YouTube.Builder(new NetHttpTransport(),
                 new JacksonFactory(), credential)
                 .setApplicationName(getActivity().getApplicationContext().getString(R.string.app_name))
@@ -118,7 +102,6 @@ public class ListVideoYoutubeFragment extends Fragment {
                                 Toast.makeText(getActivity().getApplicationContext(),"Nulllllll",Toast.LENGTH_LONG).show();
                             }
                             else{
-                                Toast.makeText(getActivity().getApplicationContext(),"Oh YEAH",Toast.LENGTH_LONG).show();
                             }
                         } catch (IOException e) {
                             e.printStackTrace();

@@ -65,16 +65,6 @@ public class LoginFragment extends Fragment implements
     public static final int RC_SIGN_IN = 0;
 
     private static final String TAG = "MainActivity";
-    private static final String PREF_ACCOUNT_NAME = "accountName";
-    public static final String[] SCOPES = {Scopes.PROFILE, YouTubeScopes.YOUTUBE, YouTubeScopes.YOUTUBE_FORCE_SSL, YOUTUBEPARTNER, YouTubeScopes.YOUTUBE_READONLY};
-    public static final String API_KEY  = "AIzaSyD0MwUad7hVnPWiuX5HiOWCEnf2VVGd8gY";
-    public static final int REQUEST_AUTHORIZATION = 2;
-    final HttpTransport transport = AndroidHttp.newCompatibleTransport();
-    final JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
-    private static final String CLIENT_ID_WEB       = "310837961882-d59jk6ajrkkor1m742rp3gsm6bse871c.apps.googleusercontent.com";
-    private static final String CLIENT_SECRET       = "xnbT5oEVrnMV9us2Jp3IR2x7";
-    private static final String CLIENT_ID_ANDROID   = "310837961882-25h7s31g4089b0jb8eo1sdf1h6pevsch.apps.googleusercontent.com";
-
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -89,10 +79,9 @@ public class LoginFragment extends Fragment implements
     private Context mContext;
     private Activity mActivity;
     private View view;
+    public static final String PREF_ACCOUNT_NAME = "accountName";
 
-    private YouTube mYouTube;
-    private String token;
-    private GoogleCredential credential;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -174,8 +163,6 @@ public class LoginFragment extends Fragment implements
             if (!mGoogleApiClient.isConnecting()) {
                 mGoogleApiClient.connect();
             }
-        } else if(requestCode == REQUEST_AUTHORIZATION) {
-            setupYoutube();
         }
     }
 
@@ -269,47 +256,6 @@ public class LoginFragment extends Fragment implements
                 editor.putString(PREF_ACCOUNT_NAME, email);
                 editor.commit();
 
-                //testttttttttttt
-
-                AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
-                    @Override
-                    protected String doInBackground(Void... params) {
-                        token = null;
-                        String full_scope = "oauth2:server:client_id:" + CLIENT_ID_WEB +  ":api_scope:" + YouTubeScopes.YOUTUBE + " " + YouTubeScopes.YOUTUBE_READONLY
-                                + " " + YouTubeScopes.YOUTUBE_FORCE_SSL + " " + YOUTUBEPARTNER;
-
-                        try {
-                            token = GoogleAuthUtil.getToken(
-                                    mContext,
-                                    email,
-                                    full_scope);
-                        } catch (IOException transientEx) {
-                            // Network or server error, try later
-                            Log.e(TAG, transientEx.toString());
-                        } catch (UserRecoverableAuthException e) {
-                            // Recover (with e.getIntent())
-                            Log.e(TAG, e.toString());
-                            Intent recover = e.getIntent();
-                            mActivity.startActivityForResult(recover, REQUEST_AUTHORIZATION);
-                        } catch (GoogleAuthException authEx) {
-                            Log.e(TAG, authEx.toString());
-                        }
-                        if(token != null){
-                            setupYoutube();
-                        }
-                        return token;
-                    }
-
-                    @Override
-                    protected void onPostExecute(final String mToken) {
-                        Log.i(TAG, "Access token retrieved:" + token);
-                    }
-
-                };
-                task.execute();
-
-
-                // end testtttttttttt
                 navUsername.setText(personName);
                 new DownloadImageTask(navImage)
                         .execute(personPhotoUrl);
@@ -321,39 +267,6 @@ public class LoginFragment extends Fragment implements
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private void setupYoutube(){
-
-        GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(mContext, Arrays.asList(SCOPES));
-        SharedPreferences settings = mActivity.getPreferences(Context.MODE_PRIVATE);
-        credential.setSelectedAccountName("kingdragon102@gmail.com");
-        // YouTube client
-        mYouTube = new YouTube.Builder(transport, jsonFactory, credential)
-                .setApplicationName(getActivity().getApplicationContext().getString(R.string.app_name)).build();
-
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... voids) {
-                YouTube.Subscriptions.List getListRequest;
-                try {
-                    getListRequest = mYouTube.subscriptions().list("snippet");
-                    getListRequest.setMine(true);
-                    getListRequest.setKey(API_KEY);
-                    SubscriptionListResponse listResponse = getListRequest.execute();
-                    List<Subscription> subscriptions = listResponse.getItems();
-                    if(subscriptions == null){
-                        Toast.makeText(getActivity().getApplicationContext(),"Nulllllll",Toast.LENGTH_LONG).show();
-                    }
-                    else{
-                        System.out.print("XXYY:" + subscriptions.size());
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        }.execute((Void) null);
     }
 
     /**
