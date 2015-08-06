@@ -35,6 +35,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Activity.PlayerViewDemoActivity"
+            android:label="Youtube Player"></activity>
 
         <meta-data android:name="com.google.android.gms.version" android:value="7571000" />
     </application>

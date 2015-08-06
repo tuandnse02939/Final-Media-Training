@@ -4,35 +4,40 @@ import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+
+import java.util.ArrayList;
+
 import tuandn.com.mediatraining.Fragments.ListVideoYoutubeFragment;
+import tuandn.com.mediatraining.Model.YouTubeChannel;
 
 /**
  * Created by Anh Trung on 7/7/2015.
  */
 public class ChannelAdapter extends FragmentPagerAdapter {
-    final int PAGE_COUNT = 3;
-    private String tabTitles[];
+    private ArrayList<YouTubeChannel> youTubeChannels;
     private Context context;
 
-    public ChannelAdapter(FragmentManager fm, Context context, String[] channel) {
+    public ChannelAdapter(FragmentManager fm, Context context, ArrayList<YouTubeChannel> channels) {
         super(fm);
         this.context = context;
-        this.tabTitles = channel;
+        this.youTubeChannels = channels;
     }
 
     @Override
     public int getCount() {
-        return tabTitles.length;
+        return youTubeChannels.size();
     }
 
     @Override
     public Fragment getItem(int position) {
-        return ListVideoYoutubeFragment.newInstance(position + 1);
+        return ListVideoYoutubeFragment.newInstance(position+1, youTubeChannels.get(position).getId());
     }
 
     @Override
     public CharSequence getPageTitle(int position) {
         // Generate title based on item position
-        return tabTitles[position];
+        return youTubeChannels.get(position).getTitle();
     }
+
+
 }
