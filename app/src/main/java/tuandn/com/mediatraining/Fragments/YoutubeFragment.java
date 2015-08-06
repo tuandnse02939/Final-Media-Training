@@ -23,6 +23,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
@@ -32,10 +33,12 @@ import com.google.api.services.youtube.model.Subscription;
 import com.google.api.services.youtube.model.SubscriptionListResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import tuandn.com.mediatraining.Adapter.ChannelAdapter;
+import tuandn.com.mediatraining.Model.YouTubeChannel;
 import tuandn.com.mediatraining.R;
 
 import static com.google.api.services.youtube.YouTubeScopes.YOUTUBEPARTNER;
@@ -46,7 +49,8 @@ import static com.google.api.services.youtube.YouTubeScopes.YOUTUBEPARTNER;
 public class YoutubeFragment extends Fragment{
 
     private static final String TAG = "MainActivity";
-    public static final String[] SCOPES = {Scopes.PROFILE, YouTubeScopes.YOUTUBE, YouTubeScopes.YOUTUBE_FORCE_SSL, YOUTUBEPARTNER, YouTubeScopes.YOUTUBE_READONLY};
+    public static final String[] SCOPES = {Scopes.PROFILE, YouTubeScopes.YOUTUBE, YouTubeScopes.YOUTUBE_FORCE_SSL, YOUTUBEPARTNER, YouTubeScopes.YOUTUBE_READONLY,
+            YouTubeScopes.YOUTUBE_UPLOAD};
     public static final String API_KEY  = "AIzaSyD0MwUad7hVnPWiuX5HiOWCEnf2VVGd8gY";
     public static final int REQUEST_AUTHORIZATION = 2;
     final HttpTransport transport = AndroidHttp.newCompatibleTransport();
@@ -61,6 +65,7 @@ public class YoutubeFragment extends Fragment{
     private String email;
     private TabLayout tabLayout;
     private ViewPager viewPager;
+    private ArrayList<YouTubeChannel> youTubeChannels;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -87,7 +92,7 @@ public class YoutubeFragment extends Fragment{
             protected String doInBackground(Void... params) {
                 token = null;
                 String full_scope = "oauth2:server:client_id:" + CLIENT_ID_WEB +  ":api_scope:" + YouTubeScopes.YOUTUBE + " " + YouTubeScopes.YOUTUBE_READONLY
-                        + " " + YouTubeScopes.YOUTUBE_FORCE_SSL + " " + YOUTUBEPARTNER;
+                        + " " + YouTubeScopes.YOUTUBE_FORCE_SSL + " " + YOUTUBEPARTNER + " " + YouTubeScopes.YOUTUBE_UPLOAD;
                 SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
                 email = sharedPref.getString(LoginFragment.PREF_ACCOUNT_NAME,"accountname");
                 try {
@@ -138,28 +143,41 @@ public class YoutubeFragment extends Fragment{
                     getListRequest = mYouTube.subscriptions().list("snippet");
                     getListRequest.setMine(true);
                     getListRequest.setKey(API_KEY);
+                    try{
                     SubscriptionListResponse listResponse = getListRequest.execute();
                     List<Subscription> subscriptions = listResponse.getItems();
-                    if(subscriptions.size() == 0){
+                    if (subscriptions.size() == 0) {
                         Toast.makeText(getActivity().getApplicationContext(), "Nulllllll", Toast.LENGTH_LONG).show();
-                    }
-                    else{
-                        channelTitles = new String[subscriptions.size()];
-                        for(int i=0; i < subscriptions.size(); i++){
+                    } else {
+                        youTubeChannels = new ArrayList<YouTubeChannel>();
+                        for (int i = 0; i < subscriptions.size(); i++) {
                             String title = subscriptions.get(i).getSnippet().getTitle();
-                            channelTitles[i] = title;
+                            String image = subscriptions.get(i).getSnippet().getThumbnails().getHigh().getUrl();
+                            String id = subscriptions.get(i).getSnippet().getResourceId().getChannelId();
+
+                            YouTubeChannel youTubeChannel = new YouTubeChannel();
+                            youTubeChannel.setId(id);
+                            youTubeChannel.setImage(image);
+                            youTubeChannel.setTitle(title);
+
+                            youTubeChannels.add(youTubeChannel);
                         }
+                    }
+                }
+                    catch (UserRecoverableAuthIOException userRecoverableException) {
+                        mActivity.startActivityForResult(
+                                userRecoverableException.getIntent(),REQUEST_AUTHORIZATION);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                return channelTitles;
+                return null;
             }
 
             @Override
             protected void onPostExecute(String[] channelList) {
                 viewPager.setAdapter(new ChannelAdapter(getActivity().getSupportFragmentManager(),
-                        getActivity(),channelList));
+                        getActivity(),youTubeChannels));
                 tabLayout.setupWithViewPager(viewPager);
             }
 
