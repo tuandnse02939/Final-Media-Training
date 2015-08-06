@@ -78,6 +78,7 @@ public class ListVideoYoutubeAdapter extends ArrayAdapter<YoutubeVideo>{
             public void onClick(View v) {
                 Intent intent = new Intent(context, PlayerViewDemoActivity.class);
                 intent.putExtra("videoCode", mList.get(position).getVideoID());
+                intent.putExtra("videoName", mList.get(position).getVideoName());
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(intent);
             }

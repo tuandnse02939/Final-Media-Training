@@ -18,6 +18,7 @@ package tuandn.com.mediatraining.Activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.TextView;
 
 import com.google.android.youtube.player.YouTubeBaseActivity;
 import com.google.android.youtube.player.YouTubePlayer;
@@ -34,7 +35,7 @@ import tuandn.com.mediatraining.R;
  */
 public class PlayerViewDemoActivity extends YouTubeFailureRecoveryActivity {
 
-  private String videoCode;
+  private String videoCode,videoName;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -43,9 +44,15 @@ public class PlayerViewDemoActivity extends YouTubeFailureRecoveryActivity {
 
     Intent intent = getIntent();
     videoCode = intent.getStringExtra("videoCode");
+    videoName = intent.getStringExtra("videoName");
+
+    TextView name = (TextView) findViewById(R.id.video_name);
+    name.setText(videoName);
 
     YouTubePlayerView youTubeView = (YouTubePlayerView) findViewById(R.id.youtube_view);
     youTubeView.initialize(DeveloperKey.DEVELOPER_KEY, this);
+
+
   }
 
   @Override
