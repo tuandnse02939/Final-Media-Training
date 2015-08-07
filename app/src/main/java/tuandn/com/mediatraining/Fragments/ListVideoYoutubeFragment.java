@@ -40,6 +40,7 @@ import tuandn.com.mediatraining.R;
 public class ListVideoYoutubeFragment extends Fragment {
     private static final String TAG = "MainActivity";
     public static final String ARG_PAGE = "ARG_PAGE";
+    public static final String CHANNEL_ID = "CHANNEL_ID";
     public static final String API_KEY  = "AIzaSyD0MwUad7hVnPWiuX5HiOWCEnf2VVGd8gY";
     private static final String PREF_ACCOUNT_NAME = "accountName";
     final HttpTransport transport = AndroidHttp.newCompatibleTransport();
@@ -49,7 +50,7 @@ public class ListVideoYoutubeFragment extends Fragment {
     private Context mContext;
     private Activity mActivity;
     private AsyncTask<String, Void, ArrayList<YoutubeVideo>> getListVideoID;
-    private static String channelID;
+    private String channelID;
 
     private ArrayList<YoutubeVideo> listVideoID;
     private GoogleAccountCredential credential;
@@ -60,9 +61,10 @@ public class ListVideoYoutubeFragment extends Fragment {
     public static ListVideoYoutubeFragment newInstance(int page, String listID) {
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
+        args.putString(CHANNEL_ID, listID);
         ListVideoYoutubeFragment fragment = new ListVideoYoutubeFragment();
         fragment.setArguments(args);
-        channelID = listID;
+        fragment.setRetainInstance(true);
         return fragment;
     }
 
@@ -86,7 +88,8 @@ public class ListVideoYoutubeFragment extends Fragment {
 
         mListFragment = (List2Fragment) getChildFragmentManager().findFragmentById(R.id.list_video_youtube2);
         setupYoutube();
-
+        Bundle b = getArguments();
+        channelID = b.getString(CHANNEL_ID);
         super.onActivityCreated(savedInstanceState);
     }
 

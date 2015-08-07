@@ -1,9 +1,11 @@
 package tuandn.com.mediatraining.Adapter;
 
 import android.content.Context;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 
 import java.util.ArrayList;
 
@@ -33,11 +35,12 @@ public class ChannelAdapter extends FragmentPagerAdapter {
         return ListVideoYoutubeFragment.newInstance(position+1, youTubeChannels.get(position).getId());
     }
 
+
+
     @Override
     public CharSequence getPageTitle(int position) {
         // Generate title based on item position
         return youTubeChannels.get(position).getTitle();
     }
-
 
 }

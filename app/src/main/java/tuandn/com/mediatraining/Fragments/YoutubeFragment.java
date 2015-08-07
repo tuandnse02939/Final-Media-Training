@@ -176,8 +176,9 @@ public class YoutubeFragment extends Fragment{
 
             @Override
             protected void onPostExecute(String[] channelList) {
-                viewPager.setAdapter(new ChannelAdapter(getActivity().getSupportFragmentManager(),
-                        getActivity(),youTubeChannels));
+                ChannelAdapter adapter = new ChannelAdapter(getActivity().getSupportFragmentManager(),
+                        getActivity(),youTubeChannels);
+                viewPager.setAdapter(adapter);
                 tabLayout.setupWithViewPager(viewPager);
             }
 
